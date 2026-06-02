@@ -1,0 +1,85 @@
+.carousel {
+  padding: 18px 20px 0;
+}
+
+.carousel__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 14px;
+  /* override any global h2 styles */
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+.carousel__wrapper {
+  position: relative;
+}
+
+.carousel__track {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 16px;
+  user-select: none;
+}
+.carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Arrow buttons — white circle, same as reference */
+.carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-60%);
+  z-index: 2;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  color: #333;
+  padding: 0;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.carousel__arrow:hover {
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.carousel__arrow--left {
+  left: -14px;
+}
+.carousel__arrow--right {
+  right: -14px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .carousel {
+    padding: 14px 12px 0;
+  }
+  .carousel__track {
+    gap: 10px;
+  }
+  .carousel__arrow {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+  .carousel__arrow--left {
+    left: -10px;
+  }
+  .carousel__arrow--right {
+    right: -10px;
+  }
+}

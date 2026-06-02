@@ -1,0 +1,177 @@
+/* ── Navbar wrapper ── */
+.navbar {
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__top {
+  background: #020617;
+  padding: 15px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__logo {
+  font-weight: 700;
+  font-size: 22px;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.navbar__logo--green {
+  color: #65E66B;
+}
+
+.navbar__auth {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Sign Up — ghost button on dark bg */
+.btn-signup {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 10px;
+  transition: opacity 0.5s;
+}
+.btn-signup:hover {
+  opacity: 0.75;
+}
+
+/* Log In — white pill on dark bg */
+.btn-login {
+  background: #65E66B;
+  color: #020617;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 14px;
+  transition: 0.5s;
+}
+.btn-login:hover {
+  background: #020617;
+  color: #65E66B;
+}
+
+/* ── Secondary bar: white with nav + search ── */
+.navbar__secondary {
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.navbar__nav {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.navbar__nav-item {
+  font-size: 13px;
+  cursor: pointer;
+  padding-bottom: 2px;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.navbar__nav-item:hover {
+  color: #222;
+}
+.navbar__nav-item--active {
+  color: #222;
+  font-weight: 700;
+  border-bottom-color: #222;
+}
+
+/* Search bar */
+.navbar__search {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.navbar__search-input {
+  border: 0px solid #ccc;
+  border-radius: 15px;
+  padding: 7px 18px;
+  font-size: 12px;
+  outline: none;
+  width: 400px;
+  color: #333;
+  background-color: #E6E6E6;
+  margin-right: 10px;
+  transition: border-color 0.8s;
+}
+.navbar__search-input:focus {
+  border: 1px solid #ccc;
+  border-color: #65E66B;
+}
+.navbar__search-input::placeholder {
+  color: #aaa;
+}
+
+.navbar__search-btn {
+  background: #65E66B;
+  color: #000;
+  border: none;
+  border-radius: 20px;
+  padding: 3px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  height: 100%;
+  line-height: 1.8;
+}
+.navbar__search-btn:hover {
+  background: #65E66B;
+}
+
+
+@media (max-width: 600px) {
+  .navbar__top {
+    padding: 9px 12px;
+  }
+  .navbar__logo {
+    font-size: 18px;
+  }
+  .navbar__secondary {
+    padding: 6px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .navbar__search {
+    width: 100%;
+  }
+  .navbar__search-input {
+    flex: 1;
+    width: auto;
+  }
+  .navbar__nav {
+    gap: 14px;
+  }
+  .navbar__nav-item {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .btn-signup {
+    display: none;
+  }
+}

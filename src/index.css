@@ -1,0 +1,32 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+ 
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f0f0f0;
+  -webkit-font-smoothing: antialiased;
+}
+ 
+#root {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 100vh;
+  display: block !important;
+  text-align: left !important;
+  border-inline: none !important;
+}
+ 
+h1, h2, h3, h4, p {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+  line-height: normal;
+}
+ 
+button {
+  font-family: inherit;
+}
