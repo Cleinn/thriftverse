@@ -4,7 +4,7 @@ import cart from "../assets/gridicons_cart.svg"
 
 const NAV_ITEMS = ["All", "Men", "Women", "Kids"];
 
-export default function Navbar() {
+export default function Navbar({ onLoginClick, user }) {
   const [activeNav, setActiveNav] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -18,21 +18,18 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      {/* Top bar: Logo + Auth buttons */}
       <div className="navbar__top">
         <span className="navbar__logo">
           Thrift<span className="navbar__logo--green">Verse</span>
         </span>
-        <div className="navbar_cart">
-          <button>
-            <img src={cart} alt="" />
-          </button>
-        </div>
         <div className="navbar__auth">
-          <button className="btn-signup" onClick={() => alert("Sign Up clicked!")}>
+          <button className="navbar-cart">
+            <img className="cart-icon" src={cart} alt="cart" />
+          </button>
+          <button className="btn-signup" onClick={onLoginClick}>
             Sign Up
           </button>
-          <button className="btn-login" onClick={() => alert("Log In clicked!")}>
+          <button className="btn-login" onClick={onLoginClick}>
             Log In
           </button>
         </div>

@@ -25,6 +25,30 @@
   color: #65E66B;
 }
 
+.navbar-cart {
+  margin-right: 8px;
+  background-color: transparent;
+  outline: none;
+  box-shadow: none;   
+  border: none;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.cart-icon {
+  max-height: 28px;
+}
+
+.cart-icon:hover {
+  filter: grayscale(100%) brightness(1.1); 
+  transition: 0.5s;
+}
+
 .navbar__auth {
   display: flex;
   gap: 8px;
@@ -56,7 +80,7 @@
   font-size: 13px;
   font-weight: 600;
   padding: 5px 14px;
-  transition: 0.5s;
+  transition: 0.3s;
 }
 .btn-login:hover {
   background: #020617;
@@ -115,11 +139,10 @@
   color: #333;
   background-color: #E6E6E6;
   margin-right: 10px;
-  transition: border-color 0.8s;
+  transition: 0.8s;
 }
 .navbar__search-input:focus {
-  border: 1px solid #ccc;
-  border-color: #65E66B;
+  box-shadow: 0 0 0 1px #65E66B; 
 }
 .navbar__search-input::placeholder {
   color: #aaa;

@@ -7,7 +7,6 @@
   font-weight: 700;
   color: #111;
   margin-bottom: 14px;
-  /* override any global h2 styles */
   letter-spacing: normal;
   line-height: 1.2;
 }
@@ -22,14 +21,13 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 3px 3px;
+  padding: 5px 3px;
   user-select: none;
 }
 .carousel__track::-webkit-scrollbar {
   display: none;
 }
 
-/* Arrow buttons — white circle, same as reference */
 .carousel__arrow {
   position: absolute;
   top: 50%;
