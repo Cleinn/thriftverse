@@ -1,5 +1,5 @@
 .carousel {
-  padding: 18px 20px 0;
+  padding: 18px 18px 0;
 }
 
 .carousel__title {
@@ -22,7 +22,7 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-bottom: 16px;
+  padding: 3px 3px;
   user-select: none;
 }
 .carousel__track::-webkit-scrollbar {

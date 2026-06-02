@@ -4,6 +4,7 @@
   width: 100%;
 }
 
+
 @media (max-width: 960px) {
   .page {
     box-shadow: none;

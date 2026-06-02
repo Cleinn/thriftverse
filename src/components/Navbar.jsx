@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Navbar.css";
+import cart from "../assets/gridicons_cart.svg"
 
 const NAV_ITEMS = ["All", "Men", "Women", "Kids"];
 
@@ -22,6 +23,11 @@ export default function Navbar() {
         <span className="navbar__logo">
           Thrift<span className="navbar__logo--green">Verse</span>
         </span>
+        <div className="navbar_cart">
+          <button>
+            <img src={cart} alt="" />
+          </button>
+        </div>
         <div className="navbar__auth">
           <button className="btn-signup" onClick={() => alert("Sign Up clicked!")}>
             Sign Up

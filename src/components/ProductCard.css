@@ -5,10 +5,12 @@
   border: 1px solid #ccc;
   border-radius: 7px;
   transition: 0.3s ease;
+  box-shadow: 1.5px 0.5px 3px #ccc;
 }
 
 .product-card:hover {
-  border: 1px solid #ffffff;
+  border: 1px solid #f0f0f0;
+  transform: scale(1.03);
 }
 
 .product-card__image {
@@ -17,11 +19,6 @@
   overflow: hidden;
   margin-bottom: 8px;
   background: #f0f0f0;
-  transition: transform 0.15s ease;
-}
-
-.product-card:hover .product-card__image {
-  transform: scale(1.03);
 }
 
 .product-card__image img {
