@@ -10,9 +10,10 @@
 .login-card {
   background: #020617;
   width: 100%;
-  max-width: 500px;
-  padding: 40px;
+  max-width: 400px;
+  padding: 30px 40px;
   border-radius: 8px;
+  height: 100%;
 }
 
 .login-title {
@@ -20,7 +21,7 @@
   font-weight: 700;
   color: #ffffff;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .login-title-green {
@@ -35,8 +36,12 @@
   line-height: 1.5;
 }
 
+.form-container {
+  margin-bottom: 40px;
+}
+
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 15px;
 }
 
 .form-label {
@@ -56,11 +61,11 @@
   background: #ffffff;
   color: #333;
   outline: none;
-  transition: border-color 0.3s;
+  transition: 0.3s;
 }
 
 .form-input:focus {
-  border: 2px solid #65E66B;
+  box-shadow: 0 0 0 1px #65E66B;
 }
 
 .form-input.input-error {
@@ -116,7 +121,7 @@
 
 .login-footer {
   text-align: center;
-  margin-top: 25px;
+  margin-top: 12px;
   color: #999;
   font-size: 14px;
 }

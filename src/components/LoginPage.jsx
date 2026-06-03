@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import "./LoginPage.css";
-import "./LoginModal.css";
 
-export default function LoginPage({ onClose }) {
+export default function LoginPage({ onClose, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -16,7 +15,7 @@ export default function LoginPage({ onClose }) {
     if (!email.trim()) {
       newErrors.email = "Email is required";
     } else if (!email.includes("@")) {
-      newErrors.email = "Enter a valid email";
+      newErrors.email = "Please enter a valid email format";
     }
 
     if (!password) {
@@ -45,14 +44,14 @@ export default function LoginPage({ onClose }) {
 
       if (error) throw error;
 
-      setMessage("✅ Login successful!");
+      setMessage("Login successful!");
       setEmail("");
       setPassword("");
       
       // Close modal after successful login
       setTimeout(() => onClose(), 1000);
     } catch (error) {
-      setMessage(`❌ ${error.message}`);
+      setMessage(`${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -70,29 +69,31 @@ export default function LoginPage({ onClose }) {
           a social-driven online thrifting ecosystem where sustainability meets individuality
         </p>
 
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className={`form-input ${errors.email ? "input-error" : ""}`}
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
+        <form onSubmit={handleLogin} noValidate>
+          <div className="form-container">
+            <div className="form-group">
+              <label className="form-label">Email</label>
+              <input
+                type="text"
+                className={`form-input ${errors.email ? "input-error" : ""}`}
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {errors.email && <span className="error-text">{errors.email}</span>}
+            </div>
 
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className={`form-input ${errors.password ? "input-error" : ""}`}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {errors.password && <span className="error-text">{errors.password}</span>}
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                className={`form-input ${errors.password ? "input-error" : ""}`}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {errors.password && <span className="error-text">{errors.password}</span>}
+            </div>
           </div>
 
           {message && <div className={`message ${message.includes("✅") ? "success" : "error"}`}>{message}</div>}
@@ -103,7 +104,17 @@ export default function LoginPage({ onClose }) {
         </form>
 
         <div className="login-footer">
-          <p>Don't have an account? <a href="/register">Register</a></p>
+          <p>Don't have an account?{" "}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onSwitchToRegister) onSwitchToRegister();
+              }}
+            >
+              Register
+            </a>
+          </p>
         </div>
       </div>
     </div>

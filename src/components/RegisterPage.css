@@ -1,0 +1,32 @@
+.register-card {
+  max-width: 420px;
+  max-height: 92vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #65E66B #020617;
+}
+
+.register-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.register-card::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+.register-card::-webkit-scrollbar-thumb {
+  background: #65E66B;
+  border-radius: 2px;
+}
+
+.register-card {
+  margin-bottom: 20px;
+}
+
+.register-card {
+  margin-bottom: 12px;
+}
+
+.register-card {
+  margin-bottom: 24px;
+}
