@@ -97,7 +97,7 @@ export default function LoginPage({ onClose }) {
 
           {message && <div className={`message ${message.includes("✅") ? "success" : "error"}`}>{message}</div>}
 
-          <button type="submit" className="btn-login" disabled={loading}>
+          <button type="submit" className="btn-submit" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>

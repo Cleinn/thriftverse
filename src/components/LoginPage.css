@@ -92,7 +92,7 @@
   color: #721c24;
 }
 
-.btn-login {
+.btn-submit {
   width: 100%;
   padding: 12px;
   background: #65E66B;
@@ -105,11 +105,11 @@
   transition: background 0.3s;
 }
 
-.btn-login:hover:not(:disabled) {
+.btn-submit:hover:not(:disabled) {
   background: #55d65b;
 }
 
-.btn-login:disabled {
+.btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
