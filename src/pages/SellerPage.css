@@ -31,7 +31,6 @@
   border-bottom: 1px solid #1a2c42;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .seller-logo-green {
@@ -48,6 +47,7 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin-top: 3px;
+  margin-left: 8px;
 }
 
 .seller-nav {
@@ -362,18 +362,21 @@
 
 @media (max-width: 700px) {
   .seller-sidebar {
-    width: 130px;
-    min-width: 130px;
+    width: 100px;
+    min-width: 105px;
   }
+
+  .seller-nav-item {
+    padding: 10px 6px;
+    margin-bottom: 10px;
+  }
+
   .seller-logo,
   .seller-nav-item span:last-child,
   .seller-back-btn {
     display: none;
   }
-  .seller-nav-item {
-    justify-content: center;
-    padding: 12px 0;
-  }
+  
   .seller-nav-icon {
     font-size: 20px;
   }
@@ -382,5 +385,10 @@
   }
   .seller-stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .seller-chat-sidebar {
+    width: 150px;
+    min-width: 150px;
   }
 }

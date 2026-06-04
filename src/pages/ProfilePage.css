@@ -78,12 +78,6 @@
   margin-bottom: 18px;
 }
 
-.profile-avatar-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
 .profile-avatar-circle {
   width: 72px;
   height: 72px;
@@ -98,6 +92,7 @@
   overflow: hidden;
   border: 2px solid #1a2c42;
   transition: border-color 0.2s;
+  margin-bottom: 12px;
 }
 .profile-avatar-circle:hover { border-color: #65E66B; }
 
@@ -124,12 +119,14 @@
   opacity: 0;
   transition: opacity 0.2s;
 }
-.profile-avatar-circle:hover .profile-avatar-overlay { opacity: 1; }
+.profile-avatar-circle:hover .profile-avatar-overlay { 
+  opacity: 1; 
+}
 
 .profile-avatar-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  row-gap: 8px;
 }
 
 .profile-avatar-hint {
@@ -159,6 +156,7 @@
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 12px;
 }
 .profile-input::placeholder { color: #4a6070; }
 .profile-input:focus {

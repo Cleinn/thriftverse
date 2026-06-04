@@ -15,12 +15,16 @@ export default function App() {
   const [page, setPage] = useState("home");
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
       setLoading(false);
     });
   }, []);
+
+  async function refreshUser() {
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) setUser(data.user);
+  }
 
   function openLogin() {
     setShowRegister(false);
@@ -38,10 +42,10 @@ export default function App() {
   }
 
   async function handleLogout() {
-      await supabase.auth.signOut();
-      setUser(null);
-      setPage("home");
-    }
+    await supabase.auth.signOut();
+    setUser(null);
+    setPage("home");
+  }
 
   if (loading) {
     return (
@@ -60,12 +64,18 @@ export default function App() {
   }
 
   if (page === "profile" && user) {
-      return <ProfilePage user={user} onBack={() => setPage("home")} />;
-    }
-  
-    if (page === "seller" && user) {
-      return <SellerPage user={user} onBack={() => setPage("home")} />;
-    }
+    return (
+      <ProfilePage
+        user={user}
+        onUserUpdate={refreshUser}
+        onBack={() => { refreshUser(); setPage("home"); }}
+      />
+    );
+  }
+
+  if (page === "seller" && user) {
+    return <SellerPage user={user} onBack={() => setPage("home")} />;
+  }
 
   return (
     <>
