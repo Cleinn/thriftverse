@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "./lib/supabase";
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
-import SellerPage from "./pages/SellerPage"; 
+import SellerPage from "./pages/SellerPage";
 import "./App.css";
+
+function ProtectedRoute({ user, children }) {
+  if (!user) return <Navigate to="/" replace />;
+  return children;
+}
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const [page, setPage] = useState("home");
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
@@ -44,7 +50,7 @@ export default function App() {
   async function handleLogout() {
     await supabase.auth.signOut();
     setUser(null);
-    setPage("home");
+    navigate("/");
   }
 
   if (loading) {
@@ -63,42 +69,61 @@ export default function App() {
     );
   }
 
-  if (page === "profile" && user) {
-    return (
-      <ProfilePage
-        user={user}
-        onUserUpdate={refreshUser}
-        onBack={() => { refreshUser(); setPage("home"); }}
-      />
-    );
-  }
-
-  if (page === "seller" && user) {
-    return <SellerPage user={user} onBack={() => setPage("home")} />;
-  }
-
   return (
     <>
-      <HomePage
-        onLoginClick={openLogin}
-        onRegisterClick={openRegister}
-        user={user}
-        onProfileClick={() => setPage("profile")}
-        onSellerClick={() => setPage("seller")}
-        onLogout={handleLogout} 
-      />
-      {showLogin && (
-        <LoginPage
-          onClose={closeAll}
-          onSwitchToRegister={openRegister}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <HomePage
+                user={user}
+                onLoginClick={openLogin}
+                onRegisterClick={openRegister}
+                onProfileClick={() => navigate("/profile")}
+                onSellerClick={() => navigate("/seller")}
+                onLogout={handleLogout}
+              />
+              {showLogin && (
+                <LoginPage
+                  onClose={closeAll}
+                  onSwitchToRegister={openRegister}
+                />
+              )}
+              {showRegister && (
+                <RegisterPage
+                  onClose={closeAll}
+                  onSwitchToLogin={openLogin}
+                />
+              )}
+            </>
+          }
         />
-      )}
-      {showRegister && (
-        <RegisterPage
-          onClose={closeAll}
-          onSwitchToLogin={openLogin}
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute user={user}>
+              <ProfilePage
+                user={user}
+                onUserUpdate={refreshUser}
+                onBack={() => { refreshUser(); navigate("/"); }}
+              />
+            </ProtectedRoute>
+          }
         />
-      )}
+
+        <Route
+          path="/seller"
+          element={
+            <ProtectedRoute user={user}>
+              <SellerPage user={user} onBack={() => navigate("/")} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   );
 }

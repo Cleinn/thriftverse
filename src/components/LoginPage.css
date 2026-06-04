@@ -80,21 +80,17 @@
 }
 
 .message {
-  padding: 12px;
-  border-radius: 6px;
   margin-bottom: 15px;
   font-size: 14px;
   text-align: center;
 }
 
 .message.success {
-  background: #d4edda;
-  color: #155724;
+  color: #65E66B;
 }
 
 .message.error {
-  background: #f8d7da;
-  color: #721c24;
+  color: #ff4444;
 }
 
 .btn-submit {

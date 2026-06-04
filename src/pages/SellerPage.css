@@ -256,8 +256,12 @@
 .seller-msg {
   font-size: 13px;
 }
-.seller-msg.success { color: #2e7d32; }
-.seller-msg.error   { color: #c62828; }
+.seller-msg.success { 
+  color: #65E66B; 
+}
+.seller-msg.error { 
+  color: #ff4444; 
+}
 
 .seller-expedition-table-wrap {
   background: #fff;

@@ -48,7 +48,6 @@ export default function LoginPage({ onClose, onSwitchToRegister }) {
       setEmail("");
       setPassword("");
       
-      // Close modal after successful login
       setTimeout(() => onClose(), 1000);
     } catch (error) {
       setMessage(`${error.message}`);
@@ -96,7 +95,7 @@ export default function LoginPage({ onClose, onSwitchToRegister }) {
             </div>
           </div>
 
-          {message && <div className={`message ${message.includes("✅") ? "success" : "error"}`}>{message}</div>}
+          {message && <div className={`message ${message.toLowerCase().includes("success") ? "success" : "error"}`}>{message}</div>}
 
           <button type="submit" className="btn-submit" disabled={loading}>
             {loading ? "Logging in..." : "Login"}

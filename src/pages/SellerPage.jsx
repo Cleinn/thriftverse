@@ -1,4 +1,3 @@
-// ===== NEW FILE: Seller dashboard – upload product, track expedition, buyer chats, shop profile =====
 import { useState } from "react";
 import "./SellerPage.css";
 
@@ -15,21 +14,23 @@ export default function SellerPage({ user, onBack }) {
 
   const [product, setProduct] = useState({ name: "", price: "", desc: "", category: "Men" });
   const [productMsg, setProductMsg] = useState("");
+  const [productMsgType, setProductMsgType] = useState("success");
 
   const shopName = user?.user_metadata?.shop_name || "";
   const [shopForm, setShopForm] = useState({ name: shopName, bio: "", contact: "" });
   const [shopMsg, setShopMsg] = useState("");
+  const [shopMsgType, setShopMsgType] = useState("success");
 
   function handleProductSubmit(e) {
     e.preventDefault();
-    if (!product.name || !product.price) { setProductMsg("Name and price are required."); return; }
-    setProductMsg("Product listed successfully! (demo)");
+    if (!product.name || !product.price) { setProductMsgType("error"); setProductMsg("Name and price are required."); return; }
+    setProductMsgType("success"); setProductMsg("Product listed successfully! (demo)");
     setProduct({ name: "", price: "", desc: "", category: "Men" });
   }
 
   function handleShopSubmit(e) {
     e.preventDefault();
-    setShopMsg("Shop profile saved! (demo)");
+    setProductMsgetShopMsgType("success"); setShopMsg("Shop profile saved! (demo)");
   }
 
   return (
@@ -90,7 +91,6 @@ export default function SellerPage({ user, onBack }) {
             </div>
           )}
 
-          {/* -------- UPLOAD PRODUCT -------- */}
           {activeTab === "upload" && (
             <div className="seller-content">
               <h1 className="seller-page-title">Upload Product</h1>
@@ -135,7 +135,7 @@ export default function SellerPage({ user, onBack }) {
                 </div>
                 <button className="seller-submit-btn" type="submit">List Item</button>
                 {productMsg && (
-                  <p className={`seller-msg ${productMsg ? "success" : "error"}`}>{productMsg}</p>
+                  <p className={`seller-msg ${productMsgType}`}>{productMsg}</p>
                 )}
               </form>
             </div>
@@ -221,7 +221,7 @@ export default function SellerPage({ user, onBack }) {
                 />
                 <button className="seller-submit-btn" type="submit">Save Shop Profile</button>
                 {shopMsg && (
-                  <p className={`seller-msg ${shopMsg ? "success" : "error"}`}>{shopMsg}</p>
+                  <p className={`seller-msg ${shopMsgType}`}>{shopMsg}</p>
                 )}
               </form>
             </div>

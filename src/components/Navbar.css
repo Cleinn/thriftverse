@@ -86,7 +86,7 @@
 }
 
 .navbar__secondary {
-  background: #ffffff;
+  background: #E8ECEC;
   border-bottom: 1px solid #e8e8e8;
   padding: 10px 20px;
   display: flex;
@@ -211,7 +211,7 @@
 }
 
 .navbar__dropdown {
-  border: 1px solid darkgray;
+  border: 2px solid #65E66B;
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
