@@ -3,6 +3,8 @@ import { supabase } from "./lib/supabase";
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import HomePage from "./pages/HomePage";
+import ProfilePage from "./pages/ProfilePage";
+import SellerPage from "./pages/SellerPage"; 
 import "./App.css";
 
 export default function App() {
@@ -10,6 +12,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [page, setPage] = useState("home");
 
   useEffect(() => {
     // Check if user is already logged in
@@ -34,6 +37,12 @@ export default function App() {
     setShowRegister(false);
   }
 
+  async function handleLogout() {
+      await supabase.auth.signOut();
+      setUser(null);
+      setPage("home");
+    }
+
   if (loading) {
     return (
       <div style={{
@@ -50,12 +59,23 @@ export default function App() {
     );
   }
 
+  if (page === "profile" && user) {
+      return <ProfilePage user={user} onBack={() => setPage("home")} />;
+    }
+  
+    if (page === "seller" && user) {
+      return <SellerPage user={user} onBack={() => setPage("home")} />;
+    }
+
   return (
     <>
       <HomePage
         onLoginClick={openLogin}
         onRegisterClick={openRegister}
         user={user}
+        onProfileClick={() => setPage("profile")}
+        onSellerClick={() => setPage("seller")}
+        onLogout={handleLogout} 
       />
       {showLogin && (
         <LoginPage
