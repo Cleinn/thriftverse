@@ -1,5 +1,6 @@
 html {
   font-size: 17px;
+  zoom: 1.25;
 }
 
 *, *::before, *::after {
