@@ -1,5 +1,5 @@
 .register-card {
-  max-width: 420px;
+  max-width: 26.25rem;
   max-height: 92vh;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -7,7 +7,7 @@
 }
 
 .register-card::-webkit-scrollbar {
-  width: 4px;
+  width: 0.25rem;
 }
 
 .register-card::-webkit-scrollbar-track {
@@ -20,13 +20,13 @@
 }
 
 .register-card {
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .register-card {
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem; 
 }
 
 .register-card {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }

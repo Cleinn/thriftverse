@@ -1,13 +1,12 @@
 .hero {
   position: relative;
-  height: 190px;
+  height: 11.875rem;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* actual photo fills the banner */
 .hero__img {
   position: absolute;
   inset: 0;
@@ -20,12 +19,12 @@
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .hero {
-    height: 140px;
+    height: 8.75rem;
   }
   .hero__title {
-    font-size: 16px;
+    font-size: 1rem;
   }
   .hero__center {
-    padding: 6px 18px;
+    padding: 0.375rem 1.125rem;
   }
 }

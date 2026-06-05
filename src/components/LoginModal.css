@@ -6,20 +6,20 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 1.25rem;
 }
 
 .login-modal-close {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 1.25rem;  
+  right: 1.25rem;
   background: none;
   border: none;
   color: #fff;
-  font-size: 28px;
+  font-size: 1.75rem;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
