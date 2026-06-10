@@ -1,0 +1,131 @@
+.pdp-page {
+    min-height: 100vh;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .pdp-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    font-size: 1.2rem;
+    color: #555;
+  }
+  
+  .pdp-breadcrumb {
+    padding: 16px 60px;
+    font-size: 0.85rem;
+    color: #666;
+    cursor: pointer;
+  }
+  
+  .pdp-breadcrumb span:hover {
+    text-decoration: underline;
+  }
+  
+  .pdp-container {
+    display: flex;
+    gap: 60px;
+    padding: 20px 60px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  .pdp-image-section {
+    flex: 1;
+  }
+  
+  .pdp-main-image {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    object-fit: cover;
+    aspect-ratio: 3/4;
+    background: #f0f0f0;
+  }
+  
+  .pdp-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .pdp-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  
+  .pdp-condition {
+    font-size: 0.95rem;
+    color: #666;
+    margin: 0;
+  }
+  
+  .pdp-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 8px 0;
+  }
+  
+  .pdp-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  
+  .pdp-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+  }
+  
+  .pdp-btn:hover {
+    opacity: 0.85;
+  }
+  
+  .pdp-btn--buy {
+    background: #1a1a2e;
+    color: #fff;
+  }
+  
+  .pdp-btn--cart {
+    background: #fff;
+    color: #1a1a2e;
+    border: 2px solid #1a1a2e;
+  }
+  
+  .pdp-btn--barter {
+    background: #fff;
+    color: #1a1a2e;
+    border: 2px solid #1a1a2e;
+  }
+  
+  .pdp-details {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .pdp-details h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  
+  .pdp-details p {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+  }

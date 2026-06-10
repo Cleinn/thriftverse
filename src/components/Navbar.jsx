@@ -11,6 +11,8 @@ export default function Navbar({
   onProfileClick,
   onSellerClick,
   onLogout,
+  onCartClick,
+  cartCount = 0,
 }) {
   const [activeNav, setActiveNav] = useState("All");
   const [search, setSearch] = useState("");
@@ -26,14 +28,7 @@ export default function Navbar({
   }
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
-
-  const avatarInitials = displayName
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
+  const avatarInitials = displayName.split(" ").map((word) => word[0]).join("").toUpperCase().slice(0, 2);
   const avatarUrl = user?.user_metadata?.avatar_url || null;
 
   useEffect(() => {
@@ -53,30 +48,29 @@ export default function Navbar({
           Thrift<span className="navbar__logo--green">Verse</span>
         </span>
         <div className="navbar__auth">
-          <button className="navbar-cart">
-            <img className="cart-icon" src={cart} alt="cart" />
+
+          {/* Cart button dengan badge */}
+          <button className="navbar-cart" onClick={onCartClick} id="navbar-cart-btn">
+            <img className="cart-icon" src={cart} alt="cart" id="cart-icon-img" />
+            {cartCount > 0 && (
+              <span className="cart-badge">{cartCount}</span>
+            )}
           </button>
 
           {user ? (
             <div className="navbar__user-info" ref={dropdownRef}>
               <span className="navbar__display-name">{displayName}</span>
-
               <div
                 className="navbar__avatar"
                 onClick={() => setDropdownOpen((prev) => !prev)}
                 title="Account menu"
               >
                 {avatarUrl ? (
-                  <img
-                    className="navbar__avatar-img"
-                    src={avatarUrl}
-                    alt={displayName}
-                  />
+                  <img className="navbar__avatar-img" src={avatarUrl} alt={displayName} />
                 ) : (
                   <span className="navbar__avatar-initials">{avatarInitials}</span>
                 )}
               </div>
-
               {dropdownOpen && (
                 <div className="navbar__dropdown">
                   <div className="navbar__dropdown-header">
@@ -84,39 +78,23 @@ export default function Navbar({
                     <span className="navbar__dropdown-email">{user?.email}</span>
                   </div>
                   <div className="navbar__dropdown-divider" />
-                  <button
-                    className="navbar__dropdown-item"
-                    onClick={() => { setDropdownOpen(false); onProfileClick?.(); }}
-                  >
-                    <span className="navbar__dropdown-icon"></span>
-                    Profile
+                  <button className="navbar__dropdown-item" onClick={() => { setDropdownOpen(false); onProfileClick?.(); }}>
+                    <span className="navbar__dropdown-icon"></span>Profile
                   </button>
-                  <button
-                    className="navbar__dropdown-item"
-                    onClick={() => { setDropdownOpen(false); onSellerClick?.(); }}
-                  >
-                    <span className="navbar__dropdown-icon"></span>
-                    Switch to Seller Account
+                  <button className="navbar__dropdown-item" onClick={() => { setDropdownOpen(false); onSellerClick?.(); }}>
+                    <span className="navbar__dropdown-icon"></span>Switch to Seller Account
                   </button>
                   <div className="navbar__dropdown-divider" />
-                  <button
-                    className="navbar__dropdown-item navbar__dropdown-item--danger"
-                    onClick={() => { setDropdownOpen(false); onLogout?.(); }}
-                  >
-                    <span className="navbar__dropdown-icon"></span>
-                    Log Out
+                  <button className="navbar__dropdown-item navbar__dropdown-item--danger" onClick={() => { setDropdownOpen(false); onLogout?.(); }}>
+                    <span className="navbar__dropdown-icon"></span>Log Out
                   </button>
                 </div>
               )}
             </div>
           ) : (
             <>
-              <button className="btn-signup" onClick={onRegisterClick}>
-                Sign Up
-              </button>
-              <button className="btn-login" onClick={onLoginClick}>
-                Log In
-              </button>
+              <button className="btn-signup" onClick={onRegisterClick}>Sign Up</button>
+              <button className="btn-login" onClick={onLoginClick}>Log In</button>
             </>
           )}
         </div>
@@ -136,7 +114,6 @@ export default function Navbar({
             ))}
           </ul>
         </nav>
-
         <div className="navbar__search">
           <input
             className="navbar__search-input"
@@ -145,11 +122,18 @@ export default function Navbar({
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
-          <button className="navbar__search-btn" onClick={handleSearch}>
-            Search
-          </button>
+          <button className="navbar__search-btn" onClick={handleSearch}>Search</button>
         </div>
       </div>
+
+      {/* Flying item animation target */}
+      <div id="cart-fly-target" style={{
+        position: "fixed",
+        top: 0, left: 0,
+        width: 0, height: 0,
+        pointerEvents: "none",
+        zIndex: 9999
+      }} />
     </header>
   );
 }

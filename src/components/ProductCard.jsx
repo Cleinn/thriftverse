@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import "./ProductCard.css";
 
 export default function ProductCard({ product }) {
+  const navigate = useNavigate();
+
   function handleClick() {
-    alert(`${product.name} — ${product.price}`);
+    navigate(`/product/${product.product_id}`);
   }
 
   return (

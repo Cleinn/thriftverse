@@ -6,6 +6,8 @@ import RegisterPage from "./components/RegisterPage";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import SellerPage from "./pages/SellerPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import CartPage from "./pages/CartPage";
 import "./App.css";
 
 function ProtectedRoute({ user, children }) {
@@ -18,7 +20,16 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [cartCount, setCartCount] = useState(() => {
+    const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
+    return cart.reduce((sum, item) => sum + item.quantity, 0);
+  });
   const navigate = useNavigate();
+
+  function refreshCartCount() {
+    const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
+    setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+  }
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
@@ -27,102 +38,60 @@ export default function App() {
     });
   }, []);
 
-  async function refreshUser() {
-    const { data } = await supabase.auth.getUser();
-    if (data?.user) setUser(data.user);
-  }
-
-  function openLogin() {
-    setShowRegister(false);
-    setShowLogin(true);
-  }
-
-  function openRegister() {
-    setShowLogin(false);
-    setShowRegister(true);
-  }
-
-  function closeAll() {
-    setShowLogin(false);
-    setShowRegister(false);
-  }
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    setUser(null);
-    navigate("/");
-  }
-
-  if (loading) {
-    return (
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-        background: "#020617",
-        color: "#fff",
-        fontSize: "18px"
-      }}>
-        Loading...
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
+      {showLogin && (
+        <LoginPage
+          onClose={() => setShowLogin(false)}
+          onSwitchToRegister={() => { setShowLogin(false); setShowRegister(true); }}
+        />
+      )}
+      {showRegister && (
+        <RegisterPage
+          onClose={() => setShowRegister(false)}
+          onSwitchToLogin={() => { setShowRegister(false); setShowLogin(true); }}
+        />
+      )}
       <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <HomePage
-                user={user}
-                onLoginClick={openLogin}
-                onRegisterClick={openRegister}
-                onProfileClick={() => navigate("/profile")}
-                onSellerClick={() => navigate("/seller")}
-                onLogout={handleLogout}
-              />
-              {showLogin && (
-                <LoginPage
-                  onClose={closeAll}
-                  onSwitchToRegister={openRegister}
-                />
-              )}
-              {showRegister && (
-                <RegisterPage
-                  onClose={closeAll}
-                  onSwitchToLogin={openLogin}
-                />
-              )}
-            </>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute user={user}>
-              <ProfilePage
-                user={user}
-                onUserUpdate={refreshUser}
-                onBack={() => { refreshUser(); navigate("/"); }}
-              />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/seller"
-          element={
-            <ProtectedRoute user={user}>
-              <SellerPage user={user} onBack={() => navigate("/")} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/" element={
+          <HomePage
+            onLoginClick={() => setShowLogin(true)}
+            onRegisterClick={() => setShowRegister(true)}
+            user={user}
+            onProfileClick={() => navigate("/profile")}
+            onSellerClick={() => navigate("/seller")}
+            onLogout={async () => { await supabase.auth.signOut(); setUser(null); }}
+            onCartClick={() => navigate("/cart")}
+            cartCount={cartCount}
+          />
+        } />
+        <Route path="/product/:id" element={
+          <ProductDetailPage
+            user={user}
+            onLoginClick={() => setShowLogin(true)}
+            onCartUpdate={refreshCartCount}
+            cartCount={cartCount}
+          />
+        } />
+        <Route path="/cart" element={
+          <CartPage
+            user={user}
+            onLoginClick={() => setShowLogin(true)}
+            onCartUpdate={refreshCartCount}
+          />
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute user={user}>
+            <ProfilePage user={user} />
+          </ProtectedRoute>
+        } />
+        <Route path="/seller" element={
+          <ProtectedRoute user={user}>
+            <SellerPage user={user} />
+          </ProtectedRoute>
+        } />
       </Routes>
     </>
   );

@@ -1,5 +1,6 @@
 import Navbar from "../components/Navbar";
 import HeroBanner from "../components/HeroBanner";
+import WindowShorts from "../components/WindowShorts";
 import ProductCarousel from "../components/ProductCarousel";
 import "./HomePage.css";
 
@@ -20,6 +21,7 @@ export default function HomePage({
         onSellerClick={onSellerClick}
         onLogout={onLogout} />
       <HeroBanner />
+      <WindowShorts />
       <ProductCarousel />
     </div>
   );
