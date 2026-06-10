@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { openOrCreateConversation } from "../lib/chat";
 import Navbar from "../components/Navbar";
 import "./ProductDetailPage.css";
 
@@ -9,6 +10,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [barterLoading, setBarterLoading] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -75,6 +77,29 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     }
   }
 
+  async function handleBarter() {
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+    if (user.id === product.seller_id) {
+      alert("Ini produk kamu sendiri.");
+      return;
+    }
+    setBarterLoading(true);
+    const convId = await openOrCreateConversation({
+      productId: product.product_id,
+      productTitle: product.title,
+      productImage: product.image_url,
+      buyerId: user.id,
+      sellerId: product.seller_id,
+    });
+    setBarterLoading(false);
+    if (convId) {
+      navigate("/chat");
+    }
+  }
+
   if (loading) return <div className="pdp-loading">Loading...</div>;
   if (!product) return <div className="pdp-loading">Produk tidak ditemukan.</div>;
 
@@ -108,7 +133,13 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
             <button className="pdp-btn pdp-btn--cart" onClick={() => addToCart(false)}>
               Add To Cart
             </button>
-            <button className="pdp-btn pdp-btn--barter">Barter</button>
+            <button
+              className="pdp-btn pdp-btn--barter"
+              onClick={handleBarter}
+              disabled={barterLoading}
+            >
+              {barterLoading ? "Membuka chat..." : "Barter"}
+            </button>
           </div>
           {product.description && (
             <div className="pdp-details">
