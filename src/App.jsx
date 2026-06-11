@@ -9,6 +9,7 @@ import SellerPage from "./pages/SellerPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import ChatPage from "./pages/ChatPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import "./App.css";
 
 function ProtectedRoute({ user, children }) {
@@ -81,6 +82,13 @@ export default function App() {
             user={user}
             onLoginClick={() => setShowLogin(true)}
             onCartUpdate={refreshCartCount}
+          />
+        } />
+        <Route path="/checkout" element={
+          <CheckoutPage
+            user={user}
+            onLoginClick={() => setShowLogin(true)}
+            cartCount={cartCount}
           />
         } />
         <Route path="/chat" element={
