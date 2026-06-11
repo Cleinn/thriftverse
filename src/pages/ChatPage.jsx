@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { fetchSellerProfile } from "../lib/profiles";
+import { sendChatMessage, subscribeToMessages, subscribeToNewConversations } from "../lib/chat";
 import Navbar from "../components/Navbar";
 import "./ChatPage.css";
 
 export default function ChatPage({ user, onLoginClick, cartCount }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Conversation yang harus langsung dibuka (dikirim dari halaman produk)
+  const initialConversationId = location.state?.conversationId || null;
+
   const [conversations, setConversations] = useState([]);
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -17,6 +23,8 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   // Fetch all conversations for this user
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
+
     async function loadConversations() {
       const { data, error } = await supabase
         .from("conversations")
@@ -24,33 +32,33 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        // For conversations where seller_name is missing, backfill from profiles
+      if (!error && data && !cancelled) {
+        // Pastikan seller_name = NAMA TOKO (shop_name); backfill bila kosong
+        // atau bila masih menyimpan username lama.
         const enriched = await Promise.all(
           data.map(async (conv) => {
-            if (!conv.seller_name) {
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("username")
-                .eq("id", conv.seller_id)
-                .maybeSingle();
-              if (profile?.username) {
-                // Persist the fix back to DB
-                await supabase
-                  .from("conversations")
-                  .update({ seller_name: profile.username })
-                  .eq("id", conv.id);
-                return { ...conv, seller_name: profile.username };
-              }
+            const profile = await fetchSellerProfile(conv.seller_id);
+            if (profile.displayName && conv.seller_name !== profile.displayName) {
+              await supabase
+                .from("conversations")
+                .update({ seller_name: profile.displayName })
+                .eq("id", conv.id);
+              return { ...conv, seller_name: profile.displayName };
             }
             return conv;
           })
         );
 
+        if (cancelled) return;
         setConversations(enriched);
 
-        // For conversations where current user is the seller,
-        // look up the buyer's username from profiles (no buyer_name column exists)
+        // Auto-open conversation dari halaman produk
+        if (initialConversationId) {
+          const target = enriched.find((c) => c.id === initialConversationId);
+          if (target) setActiveConv(target);
+        }
+
+        // Untuk percakapan di mana user adalah seller, cari username buyer
         const buyerMap = {};
         await Promise.all(
           enriched
@@ -64,14 +72,24 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
               buyerMap[conv.id] = profile?.username || "Pembeli";
             })
         );
-        setBuyerNames(buyerMap);
+        if (!cancelled) setBuyerNames(buyerMap);
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
-    loadConversations();
-  }, [user]);
 
-  // Fetch messages when activeConv changes
+    loadConversations();
+
+    // REALTIME: conversation baru muncul di sidebar tanpa refresh
+    const unsubscribe = subscribeToNewConversations(user.id, (conv) => {
+      setConversations((prev) =>
+        prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]
+      );
+    });
+
+    return () => { cancelled = true; unsubscribe(); };
+  }, [user, initialConversationId]);
+
+  // Fetch messages + realtime subscription when activeConv changes
   useEffect(() => {
     if (!activeConv) return;
     async function loadMessages() {
@@ -84,24 +102,14 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     }
     loadMessages();
 
-    // Realtime subscription
-    const channel = supabase
-      .channel("messages:" + activeConv.id)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${activeConv.id}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new]);
-        }
-      )
-      .subscribe();
+    // REALTIME: pesan masuk/keluar langsung muncul tanpa refresh
+    const unsubscribe = subscribeToMessages(activeConv.id, (msg) => {
+      setMessages((prev) =>
+        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
+      );
+    });
 
-    return () => supabase.removeChannel(channel);
+    return unsubscribe;
   }, [activeConv]);
 
   // Scroll to bottom on new messages
@@ -111,12 +119,12 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
 
   async function sendMessage() {
     if (!input.trim() || !activeConv || !user) return;
-    const message_text = input.trim();
+    const text = input;
     setInput("");
-    await supabase.from("messages").insert({
-      conversation_id: activeConv.id,
-      sender_id: user.id,
-      message_text,
+    await sendChatMessage({
+      conversationId: activeConv.id,
+      senderId: user.id,
+      text,
     });
   }
 
@@ -130,17 +138,17 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   function getOtherName(conv) {
     if (!user) return "Penjual";
     if (user.id === conv.buyer_id) {
-      // Current user is the buyer → show seller's username
+      // Buyer melihat NAMA TOKO seller sebagai recipient
       return conv.seller_name || "Penjual";
     } else {
-      // Current user is the seller → show buyer's username (looked up separately)
+      // Seller melihat username buyer
       return buyerNames[conv.id] || "Pembeli";
     }
   }
 
   if (!user) {
     return (
-      <div className="chat-page">
+      <div className="chat-page tv-page-enter">
         <Navbar onLoginClick={onLoginClick} user={user} cartCount={cartCount} />
         <div className="chat-empty">
           <p>Login dulu untuk mengakses chat.</p>
@@ -151,7 +159,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   }
 
   return (
-    <div className="chat-page">
+    <div className="chat-page tv-page-enter">
       <Navbar
         onLoginClick={onLoginClick}
         user={user}
@@ -163,7 +171,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         <aside className="chat-sidebar">
           <h2 className="chat-sidebar__title">Pesan</h2>
           {loading ? (
-            <p className="chat-sidebar__empty">Memuat...</p>
+            <p className="chat-sidebar__empty"><span className="tv-spinner" /> Memuat...</p>
           ) : conversations.length === 0 ? (
             <p className="chat-sidebar__empty">Belum ada percakapan.</p>
           ) : (
@@ -195,7 +203,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
             </div>
           ) : (
             <>
-              {/* Header */}
+              {/* Header — recipient = nama toko */}
               <div className="chat-header">
                 <img
                   src={activeConv.product_image || "https://placehold.co/40x40"}

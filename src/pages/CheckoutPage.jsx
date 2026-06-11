@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "./CheckoutPage.css";
 
@@ -42,8 +42,13 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
-export default function CheckoutPage({ user, onLoginClick, cartCount }) {
+export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpdate }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  // DIRECT CHECKOUT (Buy Now): produk tunggal dikirim via router state,
+  // dan flow ini TIDAK menyentuh / mencampur isi cart utama.
+  const buyNowItem = location.state?.buyNow || null;
+  const isBuyNow = Boolean(buyNowItem);
   const [cartItems, setCartItems] = useState([]);
   const [shipping, setShipping] = useState("reguler");
   const [payment, setPayment] = useState("bca");
@@ -59,8 +64,14 @@ export default function CheckoutPage({ user, onLoginClick, cartCount }) {
   const [ordered, setOrdered] = useState(false);
 
   useEffect(() => {
+    if (isBuyNow) {
+      // Single Item Condition: hanya 1 produk ini yang diproses
+      setCartItems([{ ...buyNowItem, quantity: buyNowItem.quantity || 1 }]);
+      return;
+    }
     const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
     setCartItems(cart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -72,7 +83,12 @@ export default function CheckoutPage({ user, onLoginClick, cartCount }) {
       alert("Lengkapi alamat pengiriman dulu ya!");
       return;
     }
-    localStorage.removeItem("thriftverse_cart");
+    // Buy Now TIDAK boleh mengosongkan cart utama (bypass cart);
+    // hanya checkout dari cart yang membersihkan cart.
+    if (!isBuyNow) {
+      localStorage.removeItem("thriftverse_cart");
+      onCartUpdate?.();
+    }
     setOrdered(true);
   }
 

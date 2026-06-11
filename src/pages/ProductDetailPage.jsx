@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { openOrCreateConversation } from "../lib/chat";
+import { fetchSellerProfile } from "../lib/profiles";
 import Navbar from "../components/Navbar";
 import "./ProductDetailPage.css";
 
@@ -9,7 +10,8 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
-  const [sellerUsername, setSellerUsername] = useState(null);
+  // BUGFIX: tampilkan NAMA TOKO (shop_name), bukan username
+  const [seller, setSeller] = useState({ shopName: null, username: null, displayName: null });
   const [loading, setLoading] = useState(true);
   const [barterLoading, setBarterLoading] = useState(false);
 
@@ -23,16 +25,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
 
       if (!error && data) {
         setProduct(data);
-
-        if (data.seller_username) {
-          setSellerUsername(data.seller_username);
-        } else if (data.seller_id) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("username")
-            .eq("id", data.seller_id)
-            .maybeSingle();
-          if (profile?.username) setSellerUsername(profile.username);
+        if (data.seller_id) {
+          // profiles.shop_name (nama toko) diutamakan; fallback ke username
+          const profile = await fetchSellerProfile(data.seller_id);
+          setSeller(profile);
         }
       }
       setLoading(false);
@@ -40,13 +36,21 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     fetchProduct();
   }, [id]);
 
+  function buildCartItem() {
+    return {
+      ...product,
+      seller_shop_name: seller.shopName,
+      seller_username: seller.username,
+      seller_display_name: seller.displayName,
+      quantity: 1,
+    };
+  }
+
   function addToCart(navigateAfter = false) {
     const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
     const exists = cart.find((item) => item.product_id === product.product_id);
-    // Store seller_username so CartPage can display it
-    const cartProduct = { ...product, seller_username: sellerUsername, quantity: 1 };
     if (!exists) {
-      cart.push(cartProduct);
+      cart.push(buildCartItem());
     } else {
       exists.quantity += 1;
     }
@@ -94,7 +98,16 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     }
   }
 
-  async function handleBarter() {
+  /**
+   * BUY NOW — Direct Checkout Flow.
+   * Kirim produk ini sebagai satu-satunya item via router state.
+   * TIDAK menyentuh cart utama sama sekali (bypass total).
+   */
+  function handleBuyNow() {
+    navigate("/checkout", { state: { buyNow: buildCartItem() } });
+  }
+
+  async function handleChat() {
     if (!user) {
       onLoginClick();
       return;
@@ -110,19 +123,20 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
       productImage: product.image_url,
       buyerId: user.id,
       sellerId: product.seller_id,
-      sellerUsername: sellerUsername,
+      sellerName: seller.displayName, // nama toko sebagai recipient
     });
     setBarterLoading(false);
     if (convId) {
-      navigate("/chat");
+      // Buka chat langsung pada conversation yang benar
+      navigate("/chat", { state: { conversationId: convId } });
     }
   }
 
-  if (loading) return <div className="pdp-loading">Loading...</div>;
+  if (loading) return <div className="pdp-loading"><span className="tv-spinner" /> Loading...</div>;
   if (!product) return <div className="pdp-loading">Produk tidak ditemukan.</div>;
 
   return (
-    <div className="pdp-page">
+    <div className="pdp-page tv-page-enter">
       <Navbar
         onLoginClick={onLoginClick}
         user={user}
@@ -130,9 +144,11 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         cartCount={cartCount}
       />
       <div className="pdp-breadcrumb">
+        <span onClick={() => navigate(-1)} title="Kembali">← Back</span>
+        {" / "}
         <span onClick={() => navigate("/")}>Home</span>
         {" / "}
-        <span>Men's Fashion</span>
+        <span>{product.category || "Fashion"}</span>
         {" / "}
         <span>{product.title}</span>
       </div>
@@ -143,12 +159,14 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         <div className="pdp-info-section">
           <h1 className="pdp-title">{product.title}</h1>
           <p className="pdp-condition">{product.condition}</p>
-          {sellerUsername && (
-            <p className="pdp-seller">{sellerUsername}</p>
+          {seller.displayName && (
+            <p className="pdp-seller" title={seller.username ? `Penjual: ${seller.username}` : undefined}>
+              🏪 {seller.displayName}
+            </p>
           )}
           <p className="pdp-price">Rp {Number(product.price).toLocaleString("id-ID")}</p>
           <div className="pdp-actions">
-            <button className="pdp-btn pdp-btn--buy" onClick={() => navigate("/checkout")}>
+            <button className="pdp-btn pdp-btn--buy" onClick={handleBuyNow}>
               Buy Now
             </button>
             <button className="pdp-btn pdp-btn--cart" onClick={() => addToCart(false)}>
@@ -156,10 +174,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
             </button>
             <button
               className="pdp-btn pdp-btn--barter"
-              onClick={handleBarter}
+              onClick={handleChat}
               disabled={barterLoading}
             >
-              {barterLoading ? "Membuka chat..." : "Barter"}
+              {barterLoading ? "Membuka chat..." : "Chat / Barter"}
             </button>
           </div>
           {product.description && (

@@ -94,6 +94,7 @@ export default function App() {
             user={user}
             onLoginClick={() => setShowLogin(true)}
             cartCount={cartCount}
+            onCartUpdate={refreshCartCount}
           />
         } />
         <Route path="/chat" element={
@@ -110,7 +111,8 @@ export default function App() {
         } />
         <Route path="/seller" element={
           <ProtectedRoute user={user}>
-            <SellerPage user={user} />
+            {/* BUGFIX: onBack was never passed, leaving the back button dead */}
+            <SellerPage user={user} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />
       </Routes>

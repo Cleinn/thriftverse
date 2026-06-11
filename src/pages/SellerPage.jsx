@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { fetchSellerProfile } from "../lib/profiles";
+import { sendChatMessage, subscribeToMessages, subscribeToNewConversations } from "../lib/chat";
 import "./SellerPage.css";
 
 const SELLER_TABS = [
@@ -13,6 +16,10 @@ const SELLER_TABS = [
 const CATEGORIES = ["Men", "Women", "Kids", "Accessories", "Shoes"];
 
 export default function SellerPage({ user, onBack }) {
+  const navigate = useNavigate();
+  // BUGFIX: back button was dead when onBack wasn't passed — always
+  // fall back to popping the navigation stack.
+  const handleBack = onBack || (() => navigate(-1));
   const [activeTab, setActiveTab] = useState("overview");
 
   const [product, setProduct] = useState({
@@ -54,6 +61,99 @@ export default function SellerPage({ user, onBack }) {
   const [shopForm, setShopForm] = useState({ name: shopName, bio: "", contact: "" });
   const [shopMsg, setShopMsg] = useState("");
   const [shopMsgType, setShopMsgType] = useState("success");
+
+  // Prefer nilai dari tabel profiles (sumber kebenaran untuk nama toko)
+  useEffect(() => {
+    if (!user) return;
+    fetchSellerProfile(user.id).then(({ shopName: dbShopName }) => {
+      if (dbShopName) setShopForm((f) => ({ ...f, name: f.name || dbShopName }));
+    });
+  }, [user]);
+
+  // ---------- BUYER CHATS (Seller Center inbox) ----------
+  const [sellerConvs, setSellerConvs] = useState([]);
+  const [convsLoading, setConvsLoading] = useState(true);
+  const [activeConv, setActiveConv] = useState(null);
+  const [chatMsgs, setChatMsgs] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [buyerNames, setBuyerNames] = useState({});
+  const chatEndRef = useRef(null);
+
+  // Load semua percakapan yang DITUJUKAN ke seller ini (via seller_id)
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    async function loadInbox() {
+      const { data } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("seller_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (cancelled || !data) { setConvsLoading(false); return; }
+      setSellerConvs(data);
+
+      const names = {};
+      await Promise.all(
+        data.map(async (conv) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username, full_name")
+            .eq("id", conv.buyer_id)
+            .maybeSingle();
+          names[conv.id] = profile?.full_name || profile?.username || "Pembeli";
+        })
+      );
+      if (!cancelled) {
+        setBuyerNames(names);
+        setConvsLoading(false);
+      }
+    }
+    loadInbox();
+
+    // REALTIME: chat buyer baru langsung muncul di inbox tanpa refresh
+    const unsubscribe = subscribeToNewConversations(user.id, (conv) => {
+      if (conv.seller_id !== user.id) return;
+      setSellerConvs((prev) =>
+        prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]
+      );
+    });
+    return () => { cancelled = true; unsubscribe(); };
+  }, [user]);
+
+  // Load pesan + subscribe realtime saat satu percakapan dibuka
+  useEffect(() => {
+    if (!activeConv) return;
+    supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", activeConv.id)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => setChatMsgs(data || []));
+
+    const unsubscribe = subscribeToMessages(activeConv.id, (msg) => {
+      setChatMsgs((prev) =>
+        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
+      );
+    });
+    return unsubscribe;
+  }, [activeConv]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMsgs]);
+
+  async function handleSendChat() {
+    if (!chatInput.trim() || !activeConv) return;
+    const text = chatInput;
+    setChatInput("");
+    await sendChatMessage({
+      conversationId: activeConv.id,
+      senderId: user.id,
+      text,
+    });
+  }
 
   // ---------- image picker ----------
   function handleImageChange(e) {
@@ -139,11 +239,24 @@ export default function SellerPage({ user, onBack }) {
   // ---------- save shop ----------
   async function handleShopSubmit(e) {
     e.preventDefault();
+    // 1) Simpan ke auth metadata (untuk seller sendiri)
     const { error } = await supabase.auth.updateUser({
       data: { shop_name: shopForm.name, shop_bio: shopForm.bio, shop_contact: shopForm.contact },
     });
-    if (error) { setShopMsgType("error"); setShopMsg("Failed to save: " + error.message); }
-    else { setShopMsgType("success"); setShopMsg("Shop profile saved!"); }
+    // 2) PENTING: simpan juga ke profiles.shop_name supaya BISA DIBACA
+    //    buyer di halaman produk & chat (metadata user lain tidak bisa dibaca).
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ shop_name: shopForm.name })
+      .eq("id", user.id);
+
+    if (error || profileError) {
+      setShopMsgType("error");
+      setShopMsg("Failed to save: " + (error?.message || profileError?.message));
+    } else {
+      setShopMsgType("success");
+      setShopMsg("Shop profile saved!");
+    }
   }
 
   return (
@@ -165,7 +278,7 @@ export default function SellerPage({ user, onBack }) {
               </button>
             ))}
           </nav>
-          <button className="seller-back-btn" onClick={onBack}>
+          <button className="seller-back-btn" onClick={handleBack}>
             ← Back to Marketplace
           </button>
         </aside>
@@ -193,8 +306,8 @@ export default function SellerPage({ user, onBack }) {
                   <span className="seller-stat-label">Total Revenue</span>
                 </div>
                 <div className="seller-stat-card">
-                  <span className="seller-stat-value">0</span>
-                  <span className="seller-stat-label">Unread Chats</span>
+                  <span className="seller-stat-value">{sellerConvs.length}</span>
+                  <span className="seller-stat-label">Buyer Chats</span>
                 </div>
               </div>
             </div>
@@ -304,17 +417,105 @@ export default function SellerPage({ user, onBack }) {
             </div>
           )}
 
-          {/* CHATS */}
+          {/* CHATS — inbox realtime, ter-route via seller_id */}
           {activeTab === "chats" && (
             <div className="seller-content seller-chat-layout">
               <div className="seller-chat-sidebar">
                 <h2 className="seller-chat-sidebar-title">Conversations</h2>
-                <div className="seller-chat-empty"><p>No chats yet</p></div>
+                {convsLoading ? (
+                  <div className="seller-chat-empty"><p>Memuat...</p></div>
+                ) : sellerConvs.length === 0 ? (
+                  <div className="seller-chat-empty"><p>No chats yet</p></div>
+                ) : (
+                  sellerConvs.map((conv) => (
+                    <button
+                      key={conv.id}
+                      className={`seller-conv-item ${activeConv?.id === conv.id ? "seller-conv-item--active" : ""}`}
+                      onClick={() => setActiveConv(conv)}
+                    >
+                      <img
+                        src={conv.product_image || "https://placehold.co/40x40"}
+                        alt={conv.product_title}
+                        className="seller-conv-item__img"
+                      />
+                      <div className="seller-conv-item__info">
+                        <span className="seller-conv-item__name">
+                          {buyerNames[conv.id] || "Pembeli"}
+                        </span>
+                        <span className="seller-conv-item__product">
+                          {conv.product_title}
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
               <div className="seller-chat-main">
-                <div className="seller-chat-placeholder">
-                  <p>Select a conversation to start chatting with buyers.</p>
-                </div>
+                {!activeConv ? (
+                  <div className="seller-chat-placeholder">
+                    <p>Select a conversation to start chatting with buyers.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="seller-chat-header">
+                      <img
+                        src={activeConv.product_image || "https://placehold.co/36x36"}
+                        alt={activeConv.product_title}
+                        className="seller-conv-item__img"
+                      />
+                      <div>
+                        <p className="seller-chat-header__name">
+                          {buyerNames[activeConv.id] || "Pembeli"}
+                        </p>
+                        <p className="seller-chat-header__product">
+                          {activeConv.product_title}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="seller-chat-messages">
+                      {chatMsgs.length === 0 && (
+                        <p className="seller-chat-empty-msg">Belum ada pesan.</p>
+                      )}
+                      {chatMsgs.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className={`seller-bubble ${msg.sender_id === user.id ? "seller-bubble--me" : "seller-bubble--them"}`}
+                        >
+                          <p>{msg.message_text}</p>
+                          <span className="seller-bubble__time">
+                            {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      ))}
+                      <div ref={chatEndRef} />
+                    </div>
+                    <div className="seller-chat-input-area">
+                      <textarea
+                        className="seller-chat-input"
+                        placeholder="Balas pembeli..."
+                        rows={1}
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendChat();
+                          }
+                        }}
+                      />
+                      <button
+                        className="seller-chat-send"
+                        onClick={handleSendChat}
+                        disabled={!chatInput.trim()}
+                      >
+                        ➤
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
