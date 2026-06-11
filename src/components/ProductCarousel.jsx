@@ -9,17 +9,10 @@ export default function ProductCarousel() {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchProducts()
-      .then(setProducts)
-      .catch(() => setError("Failed to load products."));
+    fetchProducts().then(setProducts);
   }, []);
-
-  function scrollByAmount(direction) {
-    scrollRef.current.scrollBy({ left: direction * 220, behavior: "smooth" });
-  }
 
   function handleMouseDown(e) {
     setIsDragging(true);
@@ -42,7 +35,6 @@ export default function ProductCarousel() {
     <section className="carousel">
       <h2 className="carousel__title">Recommended For You</h2>
       <div className="carousel__wrapper">
-        <button className="carousel__arrow carousel__arrow--left" onClick={() => scrollByAmount(-1)}>‹</button>
         <div
           ref={scrollRef}
           className="carousel__track"
@@ -60,7 +52,6 @@ export default function ProductCarousel() {
             ))
           )}
         </div>
-        <button className="carousel__arrow carousel__arrow--right" onClick={() => scrollByAmount(1)}>›</button>
       </div>
     </section>
   );

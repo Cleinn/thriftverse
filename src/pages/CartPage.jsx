@@ -61,7 +61,7 @@ export default function CartPage({ user, onLoginClick, onCartUpdate }) {
                   <input type="checkbox" defaultChecked />
                   <div className="cart-item__inner">
                     <div className="cart-item__seller">
-                      🏪 {item.seller_name || "Toko ThriftVerse"}
+                      🏪 {item.seller_username || item.seller_name || "Penjual"}
                     </div>
                     <div className="cart-item__row">
                       <img src={item.image_url} alt={item.title} className="cart-item__img" />

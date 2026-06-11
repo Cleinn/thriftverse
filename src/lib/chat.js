@@ -1,10 +1,29 @@
 import { supabase } from "../lib/supabase";
 
 /**
+ * Ambil username dari profiles table berdasarkan user id.
+ */
+async function fetchUsername(userId) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", userId)
+    .maybeSingle();
+  return data?.username || null;
+}
+
+/**
  * Buka atau buat conversation antara buyer dan seller untuk suatu produk.
  * Returns conversation id.
  */
-export async function openOrCreateConversation({ productId, productTitle, productImage, buyerId, sellerId }) {
+export async function openOrCreateConversation({
+  productId,
+  productTitle,
+  productImage,
+  buyerId,
+  sellerId,
+  sellerUsername,
+}) {
   // Cek apakah sudah ada
   const { data: existing } = await supabase
     .from("conversations")
@@ -16,6 +35,10 @@ export async function openOrCreateConversation({ productId, productTitle, produc
 
   if (existing) return existing.id;
 
+  // Resolve seller username from profiles if not provided
+  const resolvedSellerName =
+    sellerUsername || (await fetchUsername(sellerId));
+
   // Buat baru
   const { data, error } = await supabase
     .from("conversations")
@@ -25,7 +48,7 @@ export async function openOrCreateConversation({ productId, productTitle, produc
       seller_id: sellerId,
       product_title: productTitle,
       product_image: productImage,
-      seller_name: null, // akan diisi dari view nanti
+      seller_name: resolvedSellerName,
     })
     .select("id")
     .single();

@@ -9,6 +9,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   const [conversations, setConversations] = useState([]);
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [buyerNames, setBuyerNames] = useState({}); // conv.id → buyer username
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
@@ -22,7 +23,49 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         .select("*")
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
-      if (!error) setConversations(data || []);
+
+      if (!error && data) {
+        // For conversations where seller_name is missing, backfill from profiles
+        const enriched = await Promise.all(
+          data.map(async (conv) => {
+            if (!conv.seller_name) {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("username")
+                .eq("id", conv.seller_id)
+                .maybeSingle();
+              if (profile?.username) {
+                // Persist the fix back to DB
+                await supabase
+                  .from("conversations")
+                  .update({ seller_name: profile.username })
+                  .eq("id", conv.id);
+                return { ...conv, seller_name: profile.username };
+              }
+            }
+            return conv;
+          })
+        );
+
+        setConversations(enriched);
+
+        // For conversations where current user is the seller,
+        // look up the buyer's username from profiles (no buyer_name column exists)
+        const buyerMap = {};
+        await Promise.all(
+          enriched
+            .filter((conv) => conv.seller_id === user.id)
+            .map(async (conv) => {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("username")
+                .eq("id", conv.buyer_id)
+                .maybeSingle();
+              buyerMap[conv.id] = profile?.username || "Pembeli";
+            })
+        );
+        setBuyerNames(buyerMap);
+      }
       setLoading(false);
     }
     loadConversations();
@@ -68,12 +111,12 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
 
   async function sendMessage() {
     if (!input.trim() || !activeConv || !user) return;
-    const content = input.trim();
+    const message_text = input.trim();
     setInput("");
     await supabase.from("messages").insert({
       conversation_id: activeConv.id,
       sender_id: user.id,
-      content,
+      message_text,
     });
   }
 
@@ -86,7 +129,13 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
 
   function getOtherName(conv) {
     if (!user) return "Penjual";
-    return user.id === conv.buyer_id ? conv.seller_name || "Penjual" : "Pembeli";
+    if (user.id === conv.buyer_id) {
+      // Current user is the buyer → show seller's username
+      return conv.seller_name || "Penjual";
+    } else {
+      // Current user is the seller → show buyer's username (looked up separately)
+      return buyerNames[conv.id] || "Pembeli";
+    }
   }
 
   if (!user) {
@@ -169,7 +218,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
                     key={msg.id}
                     className={`chat-bubble ${msg.sender_id === user.id ? "chat-bubble--me" : "chat-bubble--them"}`}
                   >
-                    <p>{msg.content}</p>
+                    <p>{msg.message_text}</p>
                     <span className="chat-bubble__time">
                       {new Date(msg.created_at).toLocaleTimeString("id-ID", {
                         hour: "2-digit",

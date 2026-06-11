@@ -9,6 +9,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  const [sellerUsername, setSellerUsername] = useState(null);
   const [loading, setLoading] = useState(true);
   const [barterLoading, setBarterLoading] = useState(false);
 
@@ -19,7 +20,22 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         .select("*")
         .eq("product_id", id)
         .single();
-      if (!error) setProduct(data);
+
+      if (!error && data) {
+        setProduct(data);
+
+        // Use seller_username from view if available, otherwise fetch from profiles
+        if (data.seller_username) {
+          setSellerUsername(data.seller_username);
+        } else if (data.seller_id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", data.seller_id)
+            .maybeSingle();
+          if (profile?.username) setSellerUsername(profile.username);
+        }
+      }
       setLoading(false);
     }
     fetchProduct();
@@ -28,8 +44,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   function addToCart(navigateAfter = false) {
     const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
     const exists = cart.find((item) => item.product_id === product.product_id);
+    // Store seller_username so CartPage can display it
+    const cartProduct = { ...product, seller_username: sellerUsername, quantity: 1 };
     if (!exists) {
-      cart.push({ ...product, quantity: 1 });
+      cart.push(cartProduct);
     } else {
       exists.quantity += 1;
     }
@@ -93,6 +111,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
       productImage: product.image_url,
       buyerId: user.id,
       sellerId: product.seller_id,
+      sellerUsername: sellerUsername,
     });
     setBarterLoading(false);
     if (convId) {
@@ -125,6 +144,9 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         <div className="pdp-info-section">
           <h1 className="pdp-title">{product.title}</h1>
           <p className="pdp-condition">{product.condition}</p>
+          {sellerUsername && (
+            <p className="pdp-seller">👤 {sellerUsername}</p>
+          )}
           <p className="pdp-price">Rp {Number(product.price).toLocaleString("id-ID")}</p>
           <div className="pdp-actions">
             <button className="pdp-btn pdp-btn--buy" onClick={() => navigate("/checkout")}>
