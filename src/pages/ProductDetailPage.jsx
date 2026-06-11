@@ -24,7 +24,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
       if (!error && data) {
         setProduct(data);
 
-        // Use seller_username from view if available, otherwise fetch from profiles
         if (data.seller_username) {
           setSellerUsername(data.seller_username);
         } else if (data.seller_id) {
@@ -145,7 +144,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
           <h1 className="pdp-title">{product.title}</h1>
           <p className="pdp-condition">{product.condition}</p>
           {sellerUsername && (
-            <p className="pdp-seller">👤 {sellerUsername}</p>
+            <p className="pdp-seller">{sellerUsername}</p>
           )}
           <p className="pdp-price">Rp {Number(product.price).toLocaleString("id-ID")}</p>
           <div className="pdp-actions">

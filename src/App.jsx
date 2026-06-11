@@ -40,6 +40,11 @@ export default function App() {
     });
   }, []);
 
+  async function refreshUser() {
+  const { data } = await supabase.auth.getUser();
+  setUser(data?.user || null);
+}
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -100,7 +105,7 @@ export default function App() {
         } />
         <Route path="/profile" element={
           <ProtectedRoute user={user}>
-            <ProfilePage user={user} />
+            <ProfilePage user={user} onUserUpdate={refreshUser} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />
         <Route path="/seller" element={

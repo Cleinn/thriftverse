@@ -52,28 +52,38 @@ export default function ProfilePage({ user, onBack, onUserUpdate }) {
     });
   }
 
-  async function handleSaveName(e) {
-    e.preventDefault();
-    if (!newName.trim()) { 
-      setNameMsg("Name cannot be empty."); 
-      setNameMsgType("error"); 
-      return; 
-    }
-    setNameSaving(true); setNameMsg("");
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: newName.trim() },
-      });
-      if (error) throw error;
-      setNameMsg("Display name updated!");
-      setNameMsgType("success");
-    } catch (err) {
-      setNameMsg(`${err.message}`);
-      setNameMsgType("error");
-    } finally {
-      setNameSaving(false);
-    }
+async function handleSaveName(e) {
+  e.preventDefault();
+  if (!newName.trim()) {
+    setNameMsg("Name cannot be empty.");
+    setNameMsgType("error");
+    return;
   }
+  setNameSaving(true); setNameMsg("");
+  try {
+    const { error: authError } = await supabase.auth.updateUser({
+      data: { full_name: newName.trim() },
+    });
+    if (authError) throw authError;
+
+    const { error: profileError, count } = await supabase
+      .from("profiles")
+      .update({ username: newName.trim() }, { count: "exact" })
+      .eq("id", user.id);
+
+    if (profileError) throw profileError;
+    if (count === 0) throw new Error("Profile update blocked — check RLS policy.");
+
+    await onUserUpdate();
+    setNameMsg("Display name updated!");
+    setNameMsgType("success");
+  } catch (err) {
+    setNameMsg(err.message);
+    setNameMsgType("error");
+  } finally {
+    setNameSaving(false);
+  }
+}
 
   async function handleSavePassword(e) {
     e.preventDefault();

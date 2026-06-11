@@ -6,6 +6,7 @@
   border-radius: 7px;
   transition: 0.3s ease;
   box-shadow: 1.5px 0.5px 3px #ccc;
+  background-color: #ffffff;
 }
 
 .product-card:hover {
