@@ -11,6 +11,8 @@ export default function HomePage({
   onProfileClick,
   onSellerClick,
   onLogout,
+  onCartClick,   // BUGFIX: was dropped here, so the cart was unreachable on Home
+  cartCount,     // BUGFIX: badge count never reached the navbar on Home
 }) {
   return (
     <div className="page">
@@ -19,7 +21,9 @@ export default function HomePage({
         user={user}
         onProfileClick={onProfileClick}
         onSellerClick={onSellerClick}
-        onLogout={onLogout} />
+        onLogout={onLogout}
+        onCartClick={onCartClick}
+        cartCount={cartCount} />
       <HeroBanner />
       <WindowShorts />
       <ProductCarousel />

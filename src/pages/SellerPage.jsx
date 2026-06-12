@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { fetchSellerProfile, isShopSetupComplete, saveShopProfile } from "../lib/profiles";
+import SellerChats from "../components/seller/SellerChats";
+import SellerOrders from "../components/seller/SellerOrders";
+import SellerListings from "../components/seller/SellerListings";
 import "./SellerPage.css";
 
 const SELLER_TABS = [
   { id: "overview", label: "Overview" },
+  { id: "listings", label: "My Listings" },
   { id: "upload", label: "Upload Product" },
+  { id: "orders", label: "Incoming Orders" },
   { id: "expedition", label: "Track Expedition" },
   { id: "chats", label: "Buyer Chats" },
   { id: "shop", label: "Shop Profile" },
@@ -13,8 +20,26 @@ const SELLER_TABS = [
 const CATEGORIES = ["Men", "Women", "Kids", "Accessories", "Shoes"];
 
 export default function SellerPage({ user, onBack }) {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate(-1));
   const [activeTab, setActiveTab] = useState("overview");
 
+  // ---------- ONBOARDING GATE ----------
+  // The dashboard stays LOCKED until profiles.shop_name exists.
+  // First-time sellers are redirected to the mandatory Shop Setup page.
+  const [gate, setGate] = useState("checking"); // checking | ready
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    isShopSetupComplete(user.id).then((done) => {
+      if (cancelled) return;
+      if (!done) navigate("/seller/setup", { replace: true });
+      else setGate("ready");
+    });
+    return () => { cancelled = true; };
+  }, [user, navigate]);
+
+  // ---------- upload product form ----------
   const [product, setProduct] = useState({
     title: "",
     price: "",
@@ -31,31 +56,59 @@ export default function SellerPage({ user, onBack }) {
   const [productMsgType, setProductMsgType] = useState("success");
 
   // ---------- overview stats ----------
-  const [stats, setStats] = useState({ listings: 0, revenue: 0 });
+  const [stats, setStats] = useState({ listings: 0, revenue: 0, ordersToday: 0, chats: 0 });
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || gate !== "ready") return;
+
     supabase
       .from("products")
-      .select("price, is_sold")
+      .select("price, is_sold, status")
       .eq("seller_id", user.id)
       .then(({ data }) => {
         if (!data) return;
-        const listings = data.filter((p) => !p.is_sold).length;
-        const revenue = data
-          .filter((p) => p.is_sold)
-          .reduce((s, p) => s + Number(p.price), 0);
-        setStats({ listings, revenue });
+        const listings = data.filter((p) => !p.is_sold && p.status === "available").length;
+        setStats((s) => ({ ...s, listings }));
       });
-  }, [user]);
+
+    supabase
+      .from("transactions")
+      .select("total, created_at")
+      .eq("seller_id", user.id)
+      .then(({ data }) => {
+        if (!data) return;
+        const today = new Date().toDateString();
+        setStats((s) => ({
+          ...s,
+          revenue: data.reduce((sum, o) => sum + Number(o.total || 0), 0),
+          ordersToday: data.filter((o) => new Date(o.created_at).toDateString() === today).length,
+        }));
+      });
+
+    supabase
+      .from("conversations")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", user.id)
+      .then(({ count }) => setStats((s) => ({ ...s, chats: count || 0 })));
+  }, [user, gate]);
 
   // ---------- shop form ----------
-  const shopName = user?.user_metadata?.shop_name || "";
-  const [shopForm, setShopForm] = useState({ name: shopName, bio: "", contact: "" });
+  const [shopForm, setShopForm] = useState({ name: "", description: "", contact: "" });
   const [shopMsg, setShopMsg] = useState("");
   const [shopMsgType, setShopMsgType] = useState("success");
 
-  // ---------- image picker ----------
+  useEffect(() => {
+    if (!user || gate !== "ready") return;
+    fetchSellerProfile(user.id).then(({ shopName, shopDescription, shopContact }) => {
+      setShopForm({
+        name: shopName || "",
+        description: shopDescription || "",
+        contact: shopContact || "",
+      });
+    });
+  }, [user, gate]);
+
+  // ---------- handlers ----------
   function handleImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -63,7 +116,6 @@ export default function SellerPage({ user, onBack }) {
     setImagePreview(URL.createObjectURL(file));
   }
 
-  // ---------- upload product ----------
   async function handleProductSubmit(e) {
     e.preventDefault();
     if (!product.title || !product.price) {
@@ -78,7 +130,6 @@ export default function SellerPage({ user, onBack }) {
     try {
       let image_url = null;
 
-      // 1. Upload image to Supabase Storage if provided
       if (imageFile) {
         const ext = imageFile.name.split(".").pop();
         const fileName = `${user.id}_${Date.now()}.${ext}`;
@@ -94,7 +145,6 @@ export default function SellerPage({ user, onBack }) {
         image_url = urlData.publicUrl;
       }
 
-      // 2. Insert product row
       const slug = product.title
         .toLowerCase()
         .replace(/\s+/g, "-")
@@ -125,8 +175,6 @@ export default function SellerPage({ user, onBack }) {
       setProduct({ title: "", price: "", description: "", category: "Men", condition: "Good", location: "", stock: 1 });
       setImageFile(null);
       setImagePreview(null);
-
-      // refresh stats
       setStats((prev) => ({ ...prev, listings: prev.listings + 1 }));
     } catch (err) {
       setProductMsgType("error");
@@ -136,14 +184,27 @@ export default function SellerPage({ user, onBack }) {
     }
   }
 
-  // ---------- save shop ----------
   async function handleShopSubmit(e) {
     e.preventDefault();
-    const { error } = await supabase.auth.updateUser({
-      data: { shop_name: shopForm.name, shop_bio: shopForm.bio, shop_contact: shopForm.contact },
-    });
+    if (!shopForm.name.trim()) {
+      setShopMsgType("error");
+      setShopMsg("Nama toko tidak boleh kosong.");
+      return;
+    }
+    const { error } = await saveShopProfile(user.id, shopForm);
     if (error) { setShopMsgType("error"); setShopMsg("Failed to save: " + error.message); }
     else { setShopMsgType("success"); setShopMsg("Shop profile saved!"); }
+  }
+
+  // ---------- render ----------
+  if (gate !== "ready") {
+    return (
+      <div className="seller-overlay">
+        <div className="seller-gate-loading">
+          <span className="tv-spinner" /> Memeriksa profil toko…
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -165,7 +226,7 @@ export default function SellerPage({ user, onBack }) {
               </button>
             ))}
           </nav>
-          <button className="seller-back-btn" onClick={onBack}>
+          <button className="seller-back-btn" onClick={handleBack}>
             ← Back to Marketplace
           </button>
         </aside>
@@ -177,7 +238,7 @@ export default function SellerPage({ user, onBack }) {
             <div className="seller-content">
               <h1 className="seller-page-title">Overview</h1>
               <p className="seller-page-sub">
-                Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Seller"}
+                Welcome back, {shopForm.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Seller"}
               </p>
               <div className="seller-stats-grid">
                 <div className="seller-stat-card">
@@ -185,7 +246,7 @@ export default function SellerPage({ user, onBack }) {
                   <span className="seller-stat-label">Active Listings</span>
                 </div>
                 <div className="seller-stat-card">
-                  <span className="seller-stat-value">0</span>
+                  <span className="seller-stat-value">{stats.ordersToday}</span>
                   <span className="seller-stat-label">Orders Today</span>
                 </div>
                 <div className="seller-stat-card">
@@ -193,12 +254,15 @@ export default function SellerPage({ user, onBack }) {
                   <span className="seller-stat-label">Total Revenue</span>
                 </div>
                 <div className="seller-stat-card">
-                  <span className="seller-stat-value">0</span>
-                  <span className="seller-stat-label">Unread Chats</span>
+                  <span className="seller-stat-value">{stats.chats}</span>
+                  <span className="seller-stat-label">Buyer Chats</span>
                 </div>
               </div>
             </div>
           )}
+
+          {/* MY LISTINGS — active/inactive management */}
+          {activeTab === "listings" && <SellerListings user={user} />}
 
           {/* UPLOAD */}
           {activeTab === "upload" && (
@@ -293,6 +357,23 @@ export default function SellerPage({ user, onBack }) {
             </div>
           )}
 
+          {/* INCOMING ORDERS — realtime sales routed by seller_id */}
+          {activeTab === "orders" && (
+            <SellerOrders
+              user={user}
+              onOrdersChange={(orders) => {
+                const today = new Date().toDateString();
+                setStats((s) => ({
+                  ...s,
+                  revenue: orders.reduce((sum, o) => sum + Number(o.total || 0), 0),
+                  ordersToday: orders.filter(
+                    (o) => new Date(o.created_at).toDateString() === today
+                  ).length,
+                }));
+              }}
+            />
+          )}
+
           {/* EXPEDITION */}
           {activeTab === "expedition" && (
             <div className="seller-content">
@@ -305,19 +386,7 @@ export default function SellerPage({ user, onBack }) {
           )}
 
           {/* CHATS */}
-          {activeTab === "chats" && (
-            <div className="seller-content seller-chat-layout">
-              <div className="seller-chat-sidebar">
-                <h2 className="seller-chat-sidebar-title">Conversations</h2>
-                <div className="seller-chat-empty"><p>No chats yet</p></div>
-              </div>
-              <div className="seller-chat-main">
-                <div className="seller-chat-placeholder">
-                  <p>Select a conversation to start chatting with buyers.</p>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === "chats" && <SellerChats user={user} />}
 
           {/* SHOP PROFILE */}
           {activeTab === "shop" && (
@@ -332,12 +401,12 @@ export default function SellerPage({ user, onBack }) {
                   value={shopForm.name}
                   onChange={(e) => setShopForm({ ...shopForm, name: e.target.value })}
                 />
-                <label className="seller-label">Shop Bio</label>
+                <label className="seller-label">Shop Description</label>
                 <textarea
                   className="seller-input seller-textarea"
                   placeholder="Tell buyers about your shop…"
-                  value={shopForm.bio}
-                  onChange={(e) => setShopForm({ ...shopForm, bio: e.target.value })}
+                  value={shopForm.description}
+                  onChange={(e) => setShopForm({ ...shopForm, description: e.target.value })}
                 />
                 <label className="seller-label">Contact / WhatsApp</label>
                 <input

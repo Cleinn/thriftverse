@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { createOrdersFromCheckout } from "../lib/orders";
 import "./CheckoutPage.css";
 
 const SHIPPING_OPTIONS = [
@@ -42,8 +43,13 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
-export default function CheckoutPage({ user, onLoginClick, cartCount }) {
+export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpdate }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  // DIRECT CHECKOUT (Buy Now): produk tunggal dikirim via router state,
+  // dan flow ini TIDAK menyentuh / mencampur isi cart utama.
+  const buyNowItem = location.state?.buyNow || null;
+  const isBuyNow = Boolean(buyNowItem);
   const [cartItems, setCartItems] = useState([]);
   const [shipping, setShipping] = useState("reguler");
   const [payment, setPayment] = useState("bca");
@@ -57,22 +63,59 @@ export default function CheckoutPage({ user, onLoginClick, cartCount }) {
   });
   const [note, setNote] = useState("");
   const [ordered, setOrdered] = useState(false);
+  const [placing, setPlacing] = useState(false);
 
   useEffect(() => {
+    if (isBuyNow) {
+      // Single Item Condition: hanya 1 produk ini yang diproses
+      setCartItems([{ ...buyNowItem, quantity: buyNowItem.quantity || 1 }]);
+      return;
+    }
     const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
     setCartItems(cart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const shippingCost = SHIPPING_OPTIONS.find((o) => o.id === shipping)?.price || 0;
   const total = subtotal + shippingCost;
 
-  function handleOrder() {
+  async function handleOrder() {
     if (!address.name || !address.street || !address.city) {
       alert("Lengkapi alamat pengiriman dulu ya!");
       return;
     }
-    localStorage.removeItem("thriftverse_cart");
+    if (!user) {
+      // Order harus terikat ke buyer_id agar bisa di-route ke seller
+      onLoginClick?.();
+      return;
+    }
+    setPlacing(true);
+
+    // ORDER ROUTING: tulis 1 baris order per item ke tabel transactions.
+    // Setiap baris membawa seller_id produk tsb, sehingga pesanan
+    // langsung muncul realtime di dashboard seller yang benar.
+    const { error } = await createOrdersFromCheckout({
+      buyerId: user.id,
+      items: cartItems,
+      shippingMethod: SHIPPING_OPTIONS.find((o) => o.id === shipping)?.label,
+      paymentMethod: PAYMENT_OPTIONS.find((o) => o.id === payment)?.label,
+      address,
+      note,
+    });
+
+    setPlacing(false);
+    if (error) {
+      alert("Gagal membuat pesanan: " + error.message);
+      return;
+    }
+
+    // Buy Now TIDAK boleh mengosongkan cart utama (bypass cart);
+    // hanya checkout dari cart yang membersihkan cart.
+    if (!isBuyNow) {
+      localStorage.removeItem("thriftverse_cart");
+      onCartUpdate?.();
+    }
     setOrdered(true);
   }
 
@@ -300,8 +343,8 @@ export default function CheckoutPage({ user, onLoginClick, cartCount }) {
               </div>
             </div>
 
-            <button className="co-order-btn" onClick={handleOrder}>
-              Buat Pesanan
+            <button className="co-order-btn" onClick={handleOrder} disabled={placing}>
+              {placing ? "Memproses…" : "Buat Pesanan"}
             </button>
 
             <p className="co-summary__note">

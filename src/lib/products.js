@@ -7,7 +7,8 @@ export async function fetchProducts() {
     .select(`
       *,
       profiles!products_seller_id_fkey (
-        username
+        username,
+        shop_name
       )
     `)
     .eq('status', 'available')
@@ -31,5 +32,7 @@ export async function fetchProducts() {
     ...p,
     product_id: p.id,
     seller_username: p.profiles?.username || null,
+    seller_shop_name: p.profiles?.shop_name || null,
+    seller_display_name: p.profiles?.shop_name || p.profiles?.username || null,
   }))
 }

@@ -10,6 +10,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import ChatPage from "./pages/ChatPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ShopSetupPage from "./pages/ShopSetupPage";
 import "./App.css";
 
 function ProtectedRoute({ user, children }) {
@@ -94,6 +95,7 @@ export default function App() {
             user={user}
             onLoginClick={() => setShowLogin(true)}
             cartCount={cartCount}
+            onCartUpdate={refreshCartCount}
           />
         } />
         <Route path="/chat" element={
@@ -108,9 +110,16 @@ export default function App() {
             <ProfilePage user={user} onUserUpdate={refreshUser} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />
+        <Route path="/seller/setup" element={
+          <ProtectedRoute user={user}>
+            {/* SELLER ONBOARDING: mandatory shop setup before dashboard */}
+            <ShopSetupPage user={user} />
+          </ProtectedRoute>
+        } />
         <Route path="/seller" element={
           <ProtectedRoute user={user}>
-            <SellerPage user={user} />
+            {/* BUGFIX: onBack was never passed, leaving the back button dead */}
+            <SellerPage user={user} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />
       </Routes>

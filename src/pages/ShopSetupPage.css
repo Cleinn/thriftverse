@@ -1,0 +1,102 @@
+/* Seller onboarding — same design tokens as the Seller Center */
+.shop-setup-overlay {
+  position: fixed;
+  inset: 0;
+  background: #f0f2f5;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+}
+
+.shop-setup-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(2, 6, 23, 0.1);
+  width: 100%;
+  max-width: 33rem;
+  padding: 2rem 2.25rem 1.5rem;
+  box-sizing: border-box;
+  animation: tvFadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.shop-setup-card--loading {
+  max-width: 20rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.875rem;
+  padding: 2rem;
+}
+
+.shop-setup-logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #020617;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.shop-setup-steps {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.shop-setup-step {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #8ca0b8;
+  background: #f5f7fa;
+  border: 1px solid #e0e4eb;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.shop-setup-step--active {
+  color: #020617;
+  background: rgba(101, 230, 107, 0.18);
+  border-color: #65E66B;
+}
+
+.shop-setup-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 6px;
+}
+
+.shop-setup-sub {
+  color: #666;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+}
+
+/* the inner form reuses .seller-form but should sit flat in the card */
+.shop-setup-form {
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.shop-setup-submit {
+  align-self: stretch;
+  text-align: center;
+  padding: 0.8125rem 1.5rem;
+}
+
+.shop-setup-back {
+  display: block;
+  margin: 1.25rem auto 0;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.shop-setup-back:hover { color: #020617; }
