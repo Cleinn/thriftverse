@@ -36,3 +36,25 @@ export async function fetchProducts() {
     seller_display_name: p.profiles?.shop_name || p.profiles?.username || null,
   }))
 }
+
+/**
+ * Fetch the current user's OWN active listings — used to populate the
+ * barter picker so a buyer can pick one of their items to offer in
+ * exchange. Active = status 'available', not sold, stock > 0.
+ */
+export async function fetchMyActiveListings(userId) {
+  if (!userId) return []
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('seller_id', userId)
+    .eq('status', 'available')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching own listings:', error)
+    return []
+  }
+
+  return (data || []).filter((p) => !p.is_sold && (p.stock ?? 1) > 0)
+}

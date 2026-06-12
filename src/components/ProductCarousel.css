@@ -81,3 +81,9 @@
   }
 }
 
+
+.carousel__empty {
+  color: #888;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0;
+}

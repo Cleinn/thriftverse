@@ -77,10 +77,49 @@ export async function sendChatMessage({ conversationId, senderId, text }) {
 }
 
 /**
+ * Kirim sebuah BARTER OFFER ke conversation. Tersimpan sebagai message
+ * khusus (message_type = 'barter') yang membawa data produk yang
+ * ditawarkan buyer, sehingga bisa dirender sebagai Small Product Card
+ * di chat room. Realtime INSERT event akan otomatis mendorongnya ke
+ * kedua sisi seperti pesan biasa.
+ */
+export async function sendBarterOffer({ conversationId, senderId, offeredProduct }) {
+  if (!conversationId || !offeredProduct) return { error: new Error("Missing barter data") };
+  return supabase.from("messages").insert({
+    conversation_id: conversationId,
+    sender_id: senderId,
+    message_text: `Barter offer: ${offeredProduct.title}`,
+    message_type: "barter",
+    barter_product_id: offeredProduct.id,
+    barter_product_title: offeredProduct.title,
+    barter_product_image: offeredProduct.image_url,
+    barter_product_price: offeredProduct.price,
+    barter_status: "pending",
+  });
+}
+
+/**
+ * Update status sebuah barter offer (dipakai seller via tombol
+ * Accept / Reject). Hanya seller di conversation terkait yang
+ * diizinkan menurut RLS.
+ */
+export async function updateBarterStatus({ messageId, status }) {
+  if (!messageId || !["accepted", "rejected"].includes(status)) {
+    return { error: new Error("Invalid barter status update") };
+  }
+  return supabase
+    .from("messages")
+    .update({ barter_status: status })
+    .eq("id", messageId)
+    .select()
+    .single();
+}
+
+/**
  * Subscribe realtime ke pesan-pesan baru dalam satu conversation.
  * Returns fungsi unsubscribe.
  */
-export function subscribeToMessages(conversationId, onInsert) {
+export function subscribeToMessages(conversationId, onInsert, onUpdate) {
   const channel = supabase
     .channel("messages:" + conversationId)
     .on(
@@ -92,6 +131,16 @@ export function subscribeToMessages(conversationId, onInsert) {
         filter: `conversation_id=eq.${conversationId}`,
       },
       (payload) => onInsert(payload.new)
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => onUpdate?.(payload.new)
     )
     .subscribe();
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import { Skeleton } from "../Skeleton";
 
 const FILTERS = [
   { id: "all", label: "Semua" },
@@ -93,7 +94,21 @@ export default function SellerListings({ user }) {
       </div>
 
       {loading ? (
-        <div className="seller-empty-notice"><p>Memuat listing…</p></div>
+        <div className="seller-listing-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div className="seller-listing-card" key={i}>
+              <div className="seller-listing-card__imgwrap">
+                <Skeleton width="100%" height="auto" style={{ aspectRatio: "1", borderRadius: 0 }} />
+              </div>
+              <div className="seller-listing-card__body">
+                <Skeleton width="80%" height="0.8125rem" radius="4px" />
+                <Skeleton width="50%" height="0.875rem" radius="4px" />
+                <Skeleton width="65%" height="0.7rem" radius="4px" style={{ marginBottom: "6px" }} />
+                <Skeleton width="100%" height="1.9rem" radius="8px" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : visible.length === 0 ? (
         <div className="seller-empty-notice">
           <span className="seller-empty-icon">🛍️</span>

@@ -86,3 +86,22 @@ input:focus, textarea:focus, select:focus {
 
 /* Smooth in-page scrolling (chat autoscroll etc.) */
 html { scroll-behavior: smooth; }
+
+/* Full-app boot skeleton (replaces the old text "Loading..." screen) */
+.app-boot-skeleton {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.125rem;
+  box-sizing: border-box;
+}
+.app-boot-skeleton__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.app-boot-skeleton__row {
+  display: flex;
+  gap: 0.875rem;
+  overflow: hidden;
+}

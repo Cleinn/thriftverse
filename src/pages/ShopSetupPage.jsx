@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isShopSetupComplete, saveShopProfile } from "../lib/profiles";
+import { Skeleton } from "../components/Skeleton";
 import "./ShopSetupPage.css";
 
 /**
@@ -30,10 +31,6 @@ export default function ShopSetupPage({ user }) {
       setMsg("Nama toko wajib diisi.");
       return;
     }
-    if (!form.description.trim()) {
-      setMsg("Deskripsi toko wajib diisi.");
-      return;
-    }
     setSaving(true);
     setMsg("");
     const { error } = await saveShopProfile(user.id, form);
@@ -49,8 +46,14 @@ export default function ShopSetupPage({ user }) {
   if (checking) {
     return (
       <div className="shop-setup-overlay">
-        <div className="shop-setup-card shop-setup-card--loading">
-          <span className="tv-spinner" /> Memeriksa profil toko...
+        <div className="shop-setup-card">
+          <Skeleton className="tv-skel--dark" width="9rem" height="1.25rem" radius="6px" style={{ marginBottom: "1.25rem" }} />
+          <Skeleton className="tv-skel--dark" width="13rem" height="0.7rem" radius="20px" style={{ marginBottom: "1.25rem" }} />
+          <Skeleton className="tv-skel--dark" width="70%" height="1.25rem" radius="6px" style={{ marginBottom: "0.75rem" }} />
+          <Skeleton className="tv-skel--dark" width="100%" height="2.5rem" radius="8px" style={{ marginBottom: "0.75rem" }} />
+          <Skeleton className="tv-skel--dark" width="100%" height="5rem" radius="8px" style={{ marginBottom: "0.75rem" }} />
+          <Skeleton className="tv-skel--dark" width="100%" height="2.5rem" radius="8px" style={{ marginBottom: "1rem" }} />
+          <Skeleton className="tv-skel--dark" width="100%" height="2.75rem" radius="8px" />
         </div>
       </div>
     );
@@ -87,7 +90,7 @@ export default function ShopSetupPage({ user }) {
             autoFocus
           />
 
-          <label className="seller-label">Deskripsi Toko *</label>
+          <label className="seller-label">Deskripsi Toko (opsional)</label>
           <textarea
             className="seller-input seller-textarea"
             placeholder="Ceritakan tentang toko kamu — jenis barang, kondisi, asal kota…"

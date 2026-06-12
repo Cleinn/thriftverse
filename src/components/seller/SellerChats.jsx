@@ -4,7 +4,10 @@ import {
   sendChatMessage,
   subscribeToMessages,
   subscribeToNewConversations,
+  updateBarterStatus,
 } from "../../lib/chat";
+import BarterCard from "../BarterCard";
+import { Skeleton } from "../Skeleton";
 
 /**
  * Buyer Chats — Seller Center inbox.
@@ -18,6 +21,7 @@ export default function SellerChats({ user }) {
   const [msgs, setMsgs] = useState([]);
   const [input, setInput] = useState("");
   const [buyerNames, setBuyerNames] = useState({});
+  const [barterBusy, setBarterBusy] = useState(null); // message id being updated
   const endRef = useRef(null);
 
   // Load inbox + realtime new conversations
@@ -43,7 +47,9 @@ export default function SellerChats({ user }) {
             .select("username, full_name")
             .eq("id", conv.buyer_id)
             .maybeSingle();
-          names[conv.id] = profile?.full_name || profile?.username || "Pembeli";
+          // Show the buyer's ACTUAL username. Fall back to full_name only
+          // if username is missing, then to a generic label as last resort.
+          names[conv.id] = profile?.username || profile?.full_name || "Pembeli";
         })
       );
       if (!cancelled) { setBuyerNames(names); setLoading(false); }
@@ -67,9 +73,15 @@ export default function SellerChats({ user }) {
       .order("created_at", { ascending: true })
       .then(({ data }) => setMsgs(data || []));
 
-    const unsubscribe = subscribeToMessages(activeConv.id, (msg) => {
-      setMsgs((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
-    });
+    const unsubscribe = subscribeToMessages(
+      activeConv.id,
+      (msg) => {
+        setMsgs((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+      },
+      (msg) => {
+        setMsgs((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+      }
+    );
     return unsubscribe;
   }, [activeConv]);
 
@@ -84,6 +96,20 @@ export default function SellerChats({ user }) {
     await sendChatMessage({ conversationId: activeConv.id, senderId: user.id, text });
   }
 
+  // Seller accepts / rejects a barter offer.
+  async function handleBarterDecision(msg, status) {
+    setBarterBusy(msg.id);
+    const { data, error } = await updateBarterStatus({ messageId: msg.id, status });
+    setBarterBusy(null);
+    if (error) {
+      alert("Gagal memperbarui barter: " + error.message);
+      return;
+    }
+    setMsgs((prev) =>
+      prev.map((m) => (m.id === msg.id ? { ...m, ...(data || { barter_status: status }) } : m))
+    );
+  }
+
   return (
     <div className="seller-content seller-chat-layout">
       {/* LEFT: conversation list */}
@@ -91,7 +117,15 @@ export default function SellerChats({ user }) {
         <h2 className="seller-chat-sidebar-title">Conversations</h2>
         <div className="seller-chat-sidebar-list">
           {loading ? (
-            <div className="seller-chat-empty"><p>Memuat...</p></div>
+            Array.from({ length: 5 }).map((_, i) => (
+              <div className="seller-conv-item" key={i}>
+                <Skeleton width="40px" height="40px" radius="8px" />
+                <div className="seller-conv-item__info">
+                  <Skeleton width="65%" height="0.85rem" radius="4px" style={{ marginBottom: "5px" }} />
+                  <Skeleton width="45%" height="0.75rem" radius="4px" />
+                </div>
+              </div>
+            ))
           ) : convs.length === 0 ? (
             <div className="seller-chat-empty">
               <span>💬</span>
@@ -152,20 +186,43 @@ export default function SellerChats({ user }) {
               {msgs.length === 0 && (
                 <p className="seller-chat-empty-msg">Belum ada pesan.</p>
               )}
-              {msgs.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`seller-bubble ${msg.sender_id === user.id ? "seller-bubble--me" : "seller-bubble--them"}`}
-                >
-                  <p>{msg.message_text}</p>
-                  <span className="seller-bubble__time">
-                    {new Date(msg.created_at).toLocaleTimeString("id-ID", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              ))}
+              {msgs.map((msg) =>
+                msg.message_type === "barter" ? (
+                  <div
+                    key={msg.id}
+                    className={`seller-bubble seller-bubble--barter ${
+                      msg.sender_id === user.id ? "seller-bubble--me" : "seller-bubble--them"
+                    }`}
+                  >
+                    <BarterCard
+                      msg={msg}
+                      isSeller={true}
+                      busy={barterBusy === msg.id}
+                      onAccept={() => handleBarterDecision(msg, "accepted")}
+                      onReject={() => handleBarterDecision(msg, "rejected")}
+                    />
+                    <span className="seller-bubble__time">
+                      {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    key={msg.id}
+                    className={`seller-bubble ${msg.sender_id === user.id ? "seller-bubble--me" : "seller-bubble--them"}`}
+                  >
+                    <p>{msg.message_text}</p>
+                    <span className="seller-bubble__time">
+                      {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                )
+              )}
               <div ref={endRef} />
             </div>
 

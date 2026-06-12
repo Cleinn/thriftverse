@@ -1,31 +1,52 @@
-/* Seller onboarding — same design tokens as the Seller Center */
+/* ============================================================
+   Seller onboarding — DARK THEME
+   Matches the Seller Center palette:
+     #020617 page bg · #0b1220 card · #65E66B accent
+     #8ca0b8 muted text · #1a2c42 borders
+   ============================================================ */
+
 .shop-setup-overlay {
   position: fixed;
   inset: 0;
-  background: #f0f2f5;
+  background: #020617;
   z-index: 200;
   display: flex;
-  align-items: center;
+  /* CROP FIX: flex-start (not center) keeps the TOP of a tall card
+     reachable when it overflows — centering + overflow clips the top
+     and scroll can't reach it. `margin:auto` on the card re-centers it
+     vertically only when it fits. */
+  align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
-  padding: 2rem 1rem;
+  -webkit-overflow-scrolling: touch;
+  /* CROP FIX: account for fixed headers / mobile notches via safe-area
+     insets so the first line is never tucked under a bar or the notch. */
+  padding:
+    calc(2.5rem + env(safe-area-inset-top, 0px))
+    calc(1rem + env(safe-area-inset-right, 0px))
+    calc(2.5rem + env(safe-area-inset-bottom, 0px))
+    calc(1rem + env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
 }
 
 .shop-setup-card {
-  background: #fff;
+  background: #0b1220;
+  border: 1px solid #1a2c42;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(2, 6, 23, 0.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
   width: 100%;
   max-width: 33rem;
-  padding: 2rem 2.25rem 1.5rem;
+  padding: 2rem 2.25rem 1.75rem;
   box-sizing: border-box;
+  /* re-center vertically only when there's room to spare */
+  margin: auto;
   animation: tvFadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .shop-setup-card--loading {
   max-width: 20rem;
   text-align: center;
-  color: #666;
+  color: #8ca0b8;
   font-size: 0.875rem;
   padding: 2rem;
 }
@@ -33,7 +54,7 @@
 .shop-setup-logo {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #020617;
+  color: #fff;
   display: flex;
   align-items: center;
   margin-bottom: 1.25rem;
@@ -49,37 +70,57 @@
   font-size: 0.6875rem;
   font-weight: 700;
   color: #8ca0b8;
-  background: #f5f7fa;
-  border: 1px solid #e0e4eb;
+  background: #0d1b2a;
+  border: 1px solid #1a2c42;
   padding: 4px 10px;
   border-radius: 20px;
 }
 
 .shop-setup-step--active {
-  color: #020617;
-  background: rgba(101, 230, 107, 0.18);
+  color: #65E66B;
+  background: rgba(101, 230, 107, 0.14);
   border-color: #65E66B;
 }
 
 .shop-setup-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111;
+  color: #fff;
   margin: 0 0 6px;
 }
 
 .shop-setup-sub {
-  color: #666;
+  color: #8ca0b8;
   font-size: 0.8125rem;
   line-height: 1.55;
   margin: 0 0 1.25rem;
 }
 
-/* the inner form reuses .seller-form but should sit flat in the card */
+/* the inner form reuses .seller-form but should sit flat & dark in the card */
 .shop-setup-form {
+  background: transparent;
   box-shadow: none;
   padding: 0;
   border-radius: 0;
+}
+
+/* ---- DARK-THEME field overrides (scoped to this page only, so the
+        light Seller Center forms elsewhere are untouched) ---- */
+.shop-setup-card .seller-label {
+  color: #c7d2e0;
+}
+
+.shop-setup-card .seller-input {
+  background: #0d1b2a;
+  border: 1px solid #1a2c42;
+  color: #f1f5f9;
+}
+.shop-setup-card .seller-input::placeholder {
+  color: #5d7088;
+}
+.shop-setup-card .seller-input:focus {
+  border-color: #65E66B;
+  box-shadow: 0 0 0 2px rgba(101, 230, 107, 0.18);
 }
 
 .shop-setup-submit {
@@ -93,10 +134,10 @@
   margin: 1.25rem auto 0;
   background: none;
   border: none;
-  color: #888;
+  color: #8ca0b8;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: color 0.15s;
 }
-.shop-setup-back:hover { color: #020617; }
+.shop-setup-back:hover { color: #65E66B; }

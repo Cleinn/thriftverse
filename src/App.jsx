@@ -11,6 +11,7 @@ import CartPage from "./pages/CartPage";
 import ChatPage from "./pages/ChatPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ShopSetupPage from "./pages/ShopSetupPage";
+import { Skeleton } from "./components/Skeleton";
 import "./App.css";
 
 function ProtectedRoute({ user, children }) {
@@ -46,7 +47,21 @@ export default function App() {
   setUser(data?.user || null);
 }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="app-boot-skeleton">
+        <div className="app-boot-skeleton__bar">
+          <Skeleton width="7rem" height="1.25rem" radius="6px" />
+          <Skeleton width="2.25rem" height="2.25rem" radius="50%" />
+        </div>
+        <Skeleton width="100%" height="9rem" radius="12px" style={{ marginBottom: "1.5rem" }} />
+        <div className="app-boot-skeleton__row">
+          <Skeleton width="9.25rem" height="12rem" radius="8px" />
+          <Skeleton width="9.25rem" height="12rem" radius="8px" />
+          <Skeleton width="9.25rem" height="12rem" radius="8px" />
+        </div>
+      </div>
+    );
 
   return (
     <>

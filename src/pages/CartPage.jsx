@@ -34,6 +34,31 @@ export default function CartPage({ user, onLoginClick, onCartUpdate }) {
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  // AUTH GATE: viewing the cart requires a logged-in user.
+  if (!user) {
+    return (
+      <div className="cart-page">
+        <Navbar
+          onLoginClick={onLoginClick}
+          user={user}
+          onCartClick={() => {}}
+          cartCount={0}
+        />
+        <div className="cart-container">
+          <div className="cart-main">
+            <h2 className="cart-title">Shopping Cart</h2>
+            <div className="cart-empty">
+              <p>Silakan login untuk melihat keranjang kamu.</p>
+              <button onClick={() => (onLoginClick ? onLoginClick() : navigate("/"))}>
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="cart-page">
       <Navbar

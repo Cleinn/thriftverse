@@ -5,6 +5,7 @@ import { fetchSellerProfile, isShopSetupComplete, saveShopProfile } from "../lib
 import SellerChats from "../components/seller/SellerChats";
 import SellerOrders from "../components/seller/SellerOrders";
 import SellerListings from "../components/seller/SellerListings";
+import { Skeleton } from "../components/Skeleton";
 import "./SellerPage.css";
 
 const SELLER_TABS = [
@@ -85,11 +86,38 @@ export default function SellerPage({ user, onBack }) {
         }));
       });
 
-    supabase
-      .from("conversations")
-      .select("id", { count: "exact", head: true })
-      .eq("seller_id", user.id)
-      .then(({ count }) => setStats((s) => ({ ...s, chats: count || 0 })));
+    // UNREAD BUYER CHATS — only conversations whose latest message is
+    // from the BUYER (i.e. the seller has not replied yet). We pull this
+    // seller's conversations, then check the most recent message in each.
+    (async () => {
+      const { data: convs } = await supabase
+        .from("conversations")
+        .select("id, buyer_id")
+        .eq("seller_id", user.id);
+
+      if (!convs || convs.length === 0) {
+        setStats((s) => ({ ...s, chats: 0 }));
+        return;
+      }
+
+      const results = await Promise.all(
+        convs.map(async (conv) => {
+          const { data: lastMsg } = await supabase
+            .from("messages")
+            .select("sender_id")
+            .eq("conversation_id", conv.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          // Unread = there is a message AND it was sent by the buyer
+          // (anyone who is not the seller), meaning it's unreplied.
+          return lastMsg && lastMsg.sender_id !== user.id ? 1 : 0;
+        })
+      );
+
+      const unread = results.reduce((sum, n) => sum + n, 0);
+      setStats((s) => ({ ...s, chats: unread }));
+    })();
   }, [user, gate]);
 
   // ---------- shop form ----------
@@ -200,8 +228,38 @@ export default function SellerPage({ user, onBack }) {
   if (gate !== "ready") {
     return (
       <div className="seller-overlay">
-        <div className="seller-gate-loading">
-          <span className="tv-spinner" /> Memeriksa profil toko…
+        <div className="seller-page">
+          <aside className="seller-sidebar">
+            <div className="seller-logo">
+              Thrift<span className="seller-logo-green">Verse</span>
+              <span className="seller-badge">Seller</span>
+            </div>
+            <nav className="seller-nav">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  width="100%"
+                  height="2.1rem"
+                  radius="8px"
+                  style={{ marginBottom: "2px", opacity: 0.4 }}
+                />
+              ))}
+            </nav>
+          </aside>
+          <main className="seller-main">
+            <div className="seller-content">
+              <Skeleton width="9rem" height="1.375rem" radius="6px" style={{ marginBottom: "10px" }} />
+              <Skeleton width="14rem" height="0.8125rem" radius="4px" style={{ marginBottom: "1.75rem" }} />
+              <div className="seller-stats-grid">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div className="seller-stat-card" key={i}>
+                    <Skeleton width="60%" height="1.75rem" radius="6px" style={{ marginBottom: "8px" }} />
+                    <Skeleton width="80%" height="0.75rem" radius="4px" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -255,7 +313,7 @@ export default function SellerPage({ user, onBack }) {
                 </div>
                 <div className="seller-stat-card">
                   <span className="seller-stat-value">{stats.chats}</span>
-                  <span className="seller-stat-label">Buyer Chats</span>
+                  <span className="seller-stat-label">Unread Buyer Chats</span>
                 </div>
               </div>
             </div>

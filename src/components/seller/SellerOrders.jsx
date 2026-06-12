@@ -6,6 +6,7 @@ import {
   ORDER_STATUSES,
   ORDER_STATUS_LABELS,
 } from "../../lib/orders";
+import { Skeleton } from "../Skeleton";
 
 /**
  * Incoming Orders — every checkout containing this seller's product
@@ -89,7 +90,22 @@ export default function SellerOrders({ user, onOrdersChange }) {
       </div>
 
       {loading ? (
-        <div className="seller-empty-notice"><p>Memuat pesanan…</p></div>
+        <div className="seller-order-list">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div className="seller-order-card" key={i}>
+              <Skeleton width="56px" height="56px" radius="10px" />
+              <div className="seller-order-card__info">
+                <Skeleton width="55%" height="0.875rem" radius="4px" style={{ marginBottom: "6px" }} />
+                <Skeleton width="35%" height="0.75rem" radius="4px" style={{ marginBottom: "6px" }} />
+                <Skeleton width="70%" height="0.72rem" radius="4px" />
+              </div>
+              <div className="seller-order-card__actions">
+                <Skeleton width="70px" height="1.25rem" radius="20px" />
+                <Skeleton width="90px" height="1.75rem" radius="8px" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : visible.length === 0 ? (
         <div className="seller-empty-notice">
           <span className="seller-empty-icon">📦</span>

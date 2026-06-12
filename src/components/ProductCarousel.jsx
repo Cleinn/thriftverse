@@ -1,18 +1,35 @@
 import { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
+import { SkeletonProductCard } from "./Skeleton";
 import { fetchProducts } from "../data/products";
 import "./ProductCarousel.css";
 
 export default function ProductCarousel() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get("category");
   const scrollRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
-    fetchProducts().then(setProducts);
+    fetchProducts()
+      .then((data) => setProducts(data || []))
+      .finally(() => setLoading(false));
   }, []);
+
+  // Filter by the active category from the URL (case-insensitive).
+  // "All" / no category shows everything.
+  const visibleProducts =
+    category && category !== "All"
+      ? products.filter(
+          (p) =>
+            (p.category || "").toLowerCase() === category.toLowerCase()
+        )
+      : products;
 
   function handleMouseDown(e) {
     setIsDragging(true);
@@ -33,7 +50,9 @@ export default function ProductCarousel() {
 
   return (
     <section className="carousel">
-      <h2 className="carousel__title">Recommended For You</h2>
+      <h2 className="carousel__title">
+        {category && category !== "All" ? `${category}'s Picks` : "Recommended For You"}
+      </h2>
       <div className="carousel__wrapper">
         <div
           ref={scrollRef}
@@ -44,10 +63,14 @@ export default function ProductCarousel() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {products.length === 0 ? (
-            <p style={{ color: '#888', fontSize: 13, padding: '8px 0' }}>Loading products...</p>
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonProductCard key={i} />
+            ))
+          ) : visibleProducts.length === 0 ? (
+            <p className="carousel__empty">Belum ada produk di kategori ini.</p>
           ) : (
-            products.map((product) => (
+            visibleProducts.map((product) => (
               <ProductCard key={product.product_id} product={product} />
             ))
           )}

@@ -1,0 +1,101 @@
+/* ============================================================
+   SKELETON LOADING — solid grey placeholder shapes with a smooth
+   shimmer. Neutral greys only, so it blends with any page surface
+   and never introduces brand colors. Sizes are driven by inline
+   styles / modifier classes at each call site so a skeleton matches
+   the real card it stands in for.
+   ============================================================ */
+
+@keyframes tvSkeletonShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.tv-skel {
+  position: relative;
+  background-color: #e9ecef;
+  background-image: linear-gradient(
+    90deg,
+    #e9ecef 0%,
+    #f3f5f7 50%,
+    #e9ecef 100%
+  );
+  background-size: 200% 100%;
+  animation: tvSkeletonShimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+  display: block;
+}
+
+/* Shape helpers */
+.tv-skel--text {
+  height: 0.75rem;
+  border-radius: 4px;
+}
+.tv-skel--line {
+  height: 0.625rem;
+  border-radius: 4px;
+}
+.tv-skel--circle {
+  border-radius: 50%;
+}
+.tv-skel--pill {
+  border-radius: 20px;
+}
+
+/* Dark-surface variant — for placeholders shown on dark cards
+   (e.g. the Seller onboarding page) so the greys don't glare. */
+.tv-skel--dark {
+  background-color: #1a2c42;
+  background-image: linear-gradient(
+    90deg,
+    #1a2c42 0%,
+    #243a55 50%,
+    #1a2c42 100%
+  );
+}
+
+/* Layout containers reused by several skeleton groups */
+.tv-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+.tv-skel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Product card skeleton (carousel + grids) ---- */
+.tv-skel-product {
+  min-width: 9.25rem;
+  flex-shrink: 0;
+  border: 1px solid #eee;
+  border-radius: 7px;
+  background: #fff;
+  overflow: hidden;
+}
+.tv-skel-product__img {
+  width: 100%;
+  height: 9.25rem;
+  border-radius: 0;
+}
+.tv-skel-product__body {
+  padding: 0.5rem 0.625rem 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .tv-skel-product { min-width: 7.5rem; }
+  .tv-skel-product__img { height: 7.5rem; }
+}
+
+/* Reduced motion: keep the shape, drop the animation */
+@media (prefers-reduced-motion: reduce) {
+  .tv-skel { animation: none; }
+}

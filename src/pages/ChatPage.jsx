@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { fetchSellerProfile } from "../lib/profiles";
-import { sendChatMessage, subscribeToMessages, subscribeToNewConversations } from "../lib/chat";
+import { sendChatMessage, subscribeToMessages, subscribeToNewConversations, updateBarterStatus } from "../lib/chat";
 import Navbar from "../components/Navbar";
+import BarterCard from "../components/BarterCard";
+import { Skeleton } from "../components/Skeleton";
 import "./ChatPage.css";
 
 export default function ChatPage({ user, onLoginClick, cartCount }) {
@@ -19,6 +21,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   const [sellerNames, setSellerNames] = useState({}); // seller_id → SHOP NAME (live)
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [barterBusy, setBarterBusy] = useState(null); // message id being updated
   const messagesEndRef = useRef(null);
 
   // Fetch all conversations for this user
@@ -111,12 +114,19 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     }
     loadMessages();
 
-    // REALTIME: pesan masuk/keluar langsung muncul tanpa refresh
-    const unsubscribe = subscribeToMessages(activeConv.id, (msg) => {
-      setMessages((prev) =>
-        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
-      );
-    });
+    // REALTIME: pesan masuk/keluar langsung muncul tanpa refresh.
+    // onUpdate menangani perubahan status barter (accept/reject).
+    const unsubscribe = subscribeToMessages(
+      activeConv.id,
+      (msg) => {
+        setMessages((prev) =>
+          prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
+        );
+      },
+      (msg) => {
+        setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+      }
+    );
 
     return unsubscribe;
   }, [activeConv]);
@@ -142,6 +152,21 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
       e.preventDefault();
       sendMessage();
     }
+  }
+
+  // Seller accepts / rejects a barter offer from inside the chat.
+  async function handleBarterDecision(msg, status) {
+    setBarterBusy(msg.id);
+    const { data, error } = await updateBarterStatus({ messageId: msg.id, status });
+    setBarterBusy(null);
+    if (error) {
+      alert("Gagal memperbarui barter: " + error.message);
+      return;
+    }
+    // Optimistic local update (realtime UPDATE will also sync the buyer side)
+    setMessages((prev) =>
+      prev.map((m) => (m.id === msg.id ? { ...m, ...(data || { barter_status: status }) } : m))
+    );
   }
 
   function getOtherName(conv) {
@@ -183,7 +208,15 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         <aside className="chat-sidebar">
           <h2 className="chat-sidebar__title">Pesan</h2>
           {loading ? (
-            <p className="chat-sidebar__empty"><span className="tv-spinner" /> Memuat...</p>
+            Array.from({ length: 6 }).map((_, i) => (
+              <div className="chat-conv-item" key={i}>
+                <Skeleton width="44px" height="44px" radius="8px" />
+                <div className="chat-conv-item__info">
+                  <Skeleton width="7rem" height="0.8125rem" radius="4px" style={{ marginBottom: "5px" }} />
+                  <Skeleton width="5rem" height="0.72rem" radius="4px" />
+                </div>
+              </div>
+            ))
           ) : conversations.length === 0 ? (
             <p className="chat-sidebar__empty">Belum ada percakapan.</p>
           ) : (
@@ -233,20 +266,43 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
                 {messages.length === 0 && (
                   <p className="chat-messages__empty">Mulai percakapan tentang barang ini!</p>
                 )}
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`chat-bubble ${msg.sender_id === user.id ? "chat-bubble--me" : "chat-bubble--them"}`}
-                  >
-                    <p>{msg.message_text}</p>
-                    <span className="chat-bubble__time">
-                      {new Date(msg.created_at).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                ))}
+                {messages.map((msg) =>
+                  msg.message_type === "barter" ? (
+                    <div
+                      key={msg.id}
+                      className={`chat-bubble chat-bubble--barter ${
+                        msg.sender_id === user.id ? "chat-bubble--me" : "chat-bubble--them"
+                      }`}
+                    >
+                      <BarterCard
+                        msg={msg}
+                        isSeller={activeConv.seller_id === user.id}
+                        busy={barterBusy === msg.id}
+                        onAccept={() => handleBarterDecision(msg, "accepted")}
+                        onReject={() => handleBarterDecision(msg, "rejected")}
+                      />
+                      <span className="chat-bubble__time">
+                        {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      key={msg.id}
+                      className={`chat-bubble ${msg.sender_id === user.id ? "chat-bubble--me" : "chat-bubble--them"}`}
+                    >
+                      <p>{msg.message_text}</p>
+                      <span className="chat-bubble__time">
+                        {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  )
+                )}
                 <div ref={messagesEndRef} />
               </div>
 

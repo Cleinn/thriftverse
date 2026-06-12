@@ -1,0 +1,103 @@
+/* ============================================================
+   BARTER CARD — small product card shown inside a chat bubble
+   when a buyer proposes a barter. Seller side gets Accept/Reject.
+   ============================================================ */
+.barter-card {
+  width: 15rem;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #e0e4eb;
+  border-radius: 14px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.08);
+}
+
+.barter-card__tag {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #020617;
+  background: rgba(101, 230, 107, 0.22);
+  border-radius: 20px;
+  padding: 3px 9px;
+  align-self: flex-start;
+}
+
+.barter-card__body {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.barter-card__img {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f2f2f2;
+  flex-shrink: 0;
+}
+
+.barter-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.barter-card__title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barter-card__price {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #020617;
+}
+
+.barter-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.barter-card__btn {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4375rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.barter-card__btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.barter-card__btn--accept {
+  background: #65E66B;
+  color: #020617;
+}
+.barter-card__btn--accept:hover:not(:disabled) { background: #50d456; }
+
+.barter-card__btn--reject {
+  background: #fff;
+  color: #ff4444;
+  border: 1px solid #ffd0d0;
+}
+.barter-card__btn--reject:hover:not(:disabled) { background: #fff5f5; }
+
+.barter-card__status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0;
+}
+.barter-card__status--pending { color: #888; }
+.barter-card__status--accepted { color: #2e9e44; }
+.barter-card__status--rejected { color: #ff4444; }

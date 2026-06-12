@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { openOrCreateConversation } from "../lib/chat";
+import { openOrCreateConversation, sendBarterOffer } from "../lib/chat";
 import { fetchSellerProfile } from "../lib/profiles";
+import { fetchMyActiveListings } from "../lib/products";
 import Navbar from "../components/Navbar";
+import { Skeleton } from "../components/Skeleton";
 import "./ProductDetailPage.css";
 
 export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, cartCount }) {
@@ -14,6 +16,19 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   const [loading, setLoading] = useState(true);
   const [barterLoading, setBarterLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
+
+  // ---------- barter picker ----------
+  const [showBarterPicker, setShowBarterPicker] = useState(false);
+  const [myListings, setMyListings] = useState([]);
+  const [barterSubmitting, setBarterSubmitting] = useState(false);
+
+  // Always open the Item Detail page at the very top. Without this the
+  // view can inherit the previous page's scroll offset on mount.
+  // `behavior: "instant"` overrides the global smooth-scroll so it's a
+  // clean jump, not an animated glide.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [id]);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -46,6 +61,11 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   }
 
   function addToCart(navigateAfter = false) {
+    // AUTH GATE: only logged-in users may add to / view the cart.
+    if (!user) {
+      onLoginClick?.();
+      return;
+    }
     const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
     const exists = cart.find((item) => item.product_id === product.product_id);
     if (!exists) {
@@ -125,7 +145,96 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     }
   }
 
-  if (loading) return <div className="pdp-loading"><span className="tv-spinner" /> Loading...</div>;
+  // ---------- BARTER ----------
+  // Buyer picks one of their OWN active listings to offer in exchange.
+  async function handleBarter() {
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+    if (user.id === product.seller_id) {
+      alert("Ini produk kamu sendiri.");
+      return;
+    }
+    setBarterLoading(true);
+    const listings = await fetchMyActiveListings(user.id);
+    setBarterLoading(false);
+
+    // No products uploaded → prompt the user to upload an item first.
+    if (!listings.length) {
+      alert(
+        "Kamu belum punya produk untuk ditukar. Upload barang kamu dulu di Seller Center sebelum mengajukan barter."
+      );
+      return;
+    }
+    setMyListings(listings);
+    setShowBarterPicker(true);
+  }
+
+  // Buyer confirmed which item to offer → create conversation + barter card message.
+  async function submitBarterOffer(offered) {
+    setBarterSubmitting(true);
+    const convId = await openOrCreateConversation({
+      productId: product.product_id,
+      productTitle: product.title,
+      productImage: product.image_url,
+      buyerId: user.id,
+      sellerId: product.seller_id,
+      sellerName: seller.displayName,
+    });
+
+    if (!convId) {
+      setBarterSubmitting(false);
+      alert("Gagal membuka percakapan. Coba lagi.");
+      return;
+    }
+
+    const { error } = await sendBarterOffer({
+      conversationId: convId,
+      senderId: user.id,
+      offeredProduct: offered,
+    });
+
+    setBarterSubmitting(false);
+    setShowBarterPicker(false);
+
+    if (error) {
+      alert("Gagal mengirim penawaran barter: " + error.message);
+      return;
+    }
+    navigate("/chat", { state: { conversationId: convId } });
+  }
+
+  if (loading)
+    return (
+      <div className="pdp-page tv-page-enter">
+        <Navbar
+          onLoginClick={onLoginClick}
+          user={user}
+          onCartClick={() => navigate("/cart")}
+          cartCount={cartCount}
+        />
+        <div className="pdp-breadcrumb">
+          <Skeleton width="12rem" height="0.85rem" radius="4px" />
+        </div>
+        <div className="pdp-container">
+          <div className="pdp-image-section">
+            <Skeleton className="pdp-skel-image" />
+          </div>
+          <div className="pdp-info-section">
+            <Skeleton width="70%" height="2rem" radius="6px" style={{ marginBottom: "0.75rem" }} />
+            <Skeleton width="30%" height="1rem" radius="4px" style={{ marginBottom: "0.75rem" }} />
+            <Skeleton width="45%" height="1.5rem" radius="6px" style={{ marginBottom: "1.5rem" }} />
+            <Skeleton width="40%" height="1rem" radius="4px" style={{ marginBottom: "1.5rem" }} />
+            <div className="pdp-skel-actions">
+              <Skeleton width="100%" height="2.75rem" radius="8px" />
+              <Skeleton width="100%" height="2.75rem" radius="8px" />
+              <Skeleton width="100%" height="2.75rem" radius="8px" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   if (!product) return <div className="pdp-loading">Produk tidak ditemukan.</div>;
 
   return (
@@ -136,6 +245,13 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         onCartClick={() => navigate("/cart")}
         cartCount={cartCount}
       />
+
+      {/* Back — returns to the exact previous page in history */}
+      <div className="pdp-back-row">
+        <button className="pdp-back-btn" onClick={() => navigate(-1)}>
+          ← Back
+        </button>
+      </div>
 
       {/* Breadcrumb */}
       <div className="pdp-breadcrumb">
@@ -194,10 +310,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
             </button>
             <button
               className="pdp-btn pdp-btn--barter"
-              onClick={handleChat}
+              onClick={handleBarter}
               disabled={barterLoading}
             >
-              {barterLoading ? "Membuka chat..." : "Barter"}
+              {barterLoading ? "Memuat..." : "Barter"}
             </button>
           </div>
         </div>
@@ -229,6 +345,61 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
           <h2 className="pdp-details-title">Details</h2>
           <div className="pdp-details-box">
             <p className="pdp-details-text">{product.description}</p>
+          </div>
+        </div>
+      )}
+
+      {/* BARTER PICKER — choose one of your own active listings to offer */}
+      {showBarterPicker && (
+        <div
+          className="barter-modal-overlay"
+          onClick={() => !barterSubmitting && setShowBarterPicker(false)}
+        >
+          <div className="barter-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="barter-modal__head">
+              <h3 className="barter-modal__title">Pilih barang untuk ditukar</h3>
+              <button
+                className="barter-modal__close"
+                onClick={() => setShowBarterPicker(false)}
+                disabled={barterSubmitting}
+                aria-label="Tutup"
+              >
+                ×
+              </button>
+            </div>
+            <p className="barter-modal__sub">
+              Tawarkan salah satu produk aktif kamu untuk ditukar dengan{" "}
+              <strong>{product.title}</strong>.
+            </p>
+            <div className="barter-modal__grid">
+              {myListings.map((item) => (
+                <button
+                  key={item.id}
+                  className="barter-pick-card"
+                  onClick={() => submitBarterOffer(item)}
+                  disabled={barterSubmitting}
+                >
+                  <img
+                    src={item.image_url || "https://placehold.co/120x120"}
+                    alt={item.title}
+                    className="barter-pick-card__img"
+                  />
+                  <div className="barter-pick-card__body">
+                    <span className="barter-pick-card__title" title={item.title}>
+                      {item.title}
+                    </span>
+                    <span className="barter-pick-card__price">
+                      Rp {Number(item.price).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            {barterSubmitting && (
+              <p className="barter-modal__status">
+                <span className="tv-spinner" /> Mengirim penawaran…
+              </p>
+            )}
           </div>
         </div>
       )}

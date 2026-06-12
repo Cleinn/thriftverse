@@ -276,3 +276,16 @@
       padding: 0.75rem 0.5rem;
     }
   }
+/* Barter offer bubbles: the BarterCard provides its own surface,
+   so strip the text-bubble background/border/padding. */
+.chat-bubble--barter {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  max-width: 80%;
+}
+.chat-bubble--barter .chat-bubble__time {
+  margin-top: 2px;
+  padding: 0 2px;
+  color: #999;
+}

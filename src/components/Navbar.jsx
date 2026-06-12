@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Navbar.css";
 import cart from "../assets/gridicons_cart.svg"
@@ -18,7 +18,10 @@ export default function Navbar({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeNav, setActiveNav] = useState("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+  // The active category is driven by the URL (?category=...), defaulting
+  // to "All". This keeps the navbar tabs and the product feed in sync.
+  const activeNav = searchParams.get("category") || "All";
   const [search, setSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -27,7 +30,17 @@ export default function Navbar({
   // The navbar must respond on EVERY page (e.g. Item Detail Page), even
   // when a parent page forgets to wire a handler. Each action therefore
   // falls back to direct router navigation.
-  const handleCartClick = onCartClick || (() => navigate("/cart"));
+  // AUTH GATE: the cart requires a logged-in user. When unauthenticated,
+  // prompt login instead of opening the cart.
+  const handleCartClick = () => {
+    if (!user) {
+      if (onLoginClick) onLoginClick();
+      else navigate("/");
+      return;
+    }
+    if (onCartClick) onCartClick();
+    else navigate("/cart");
+  };
   const handleProfileClick = onProfileClick || (() => navigate("/profile"));
   const handleSellerClick = onSellerClick || (() => navigate("/seller"));
   const handleLogout =
@@ -38,9 +51,19 @@ export default function Navbar({
     });
 
   function handleNavItem(item) {
-    setActiveNav(item);
-    // Category tabs always lead back to the marketplace feed
-    if (location.pathname !== "/") navigate("/");
+    // Category tabs always lead back to the marketplace feed, carrying
+    // the selected category in the URL so the product list can filter.
+    if (location.pathname !== "/") {
+      navigate(item === "All" ? "/" : `/?category=${encodeURIComponent(item)}`);
+      return;
+    }
+    if (item === "All") {
+      searchParams.delete("category");
+      setSearchParams(searchParams, { replace: true });
+    } else {
+      searchParams.set("category", item);
+      setSearchParams(searchParams, { replace: true });
+    }
   }
 
   function handleSearch() {
