@@ -42,9 +42,9 @@ export default function App() {
   }, []);
 
   async function refreshUser() {
-    const { data } = await supabase.auth.getUser();
-    setUser(data?.user || null);
-  }
+  const { data } = await supabase.auth.getUser();
+  setUser(data?.user || null);
+}
 
   if (loading) return <div>Loading...</div>;
 
@@ -118,6 +118,7 @@ export default function App() {
         } />
         <Route path="/seller" element={
           <ProtectedRoute user={user}>
+            {/* BUGFIX: onBack was never passed, leaving the back button dead */}
             <SellerPage user={user} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />

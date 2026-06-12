@@ -10,10 +10,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
-  // BUGFIX: tampilkan NAMA TOKO (shop_name), bukan username
   const [seller, setSeller] = useState({ shopName: null, username: null, displayName: null });
   const [loading, setLoading] = useState(true);
   const [barterLoading, setBarterLoading] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -26,7 +26,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
       if (!error && data) {
         setProduct(data);
         if (data.seller_id) {
-          // profiles.shop_name (nama toko) diutamakan; fallback ke username
           const profile = await fetchSellerProfile(data.seller_id);
           setSeller(profile);
         }
@@ -42,7 +41,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
       seller_shop_name: seller.shopName,
       seller_username: seller.username,
       seller_display_name: seller.displayName,
-      quantity: 1,
+      quantity,
     };
   }
 
@@ -52,7 +51,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     if (!exists) {
       cart.push(buildCartItem());
     } else {
-      exists.quantity += 1;
+      exists.quantity += quantity;
     }
     localStorage.setItem("thriftverse_cart", JSON.stringify(cart));
     onCartUpdate?.();
@@ -98,11 +97,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     }
   }
 
-  /**
-   * BUY NOW — Direct Checkout Flow.
-   * Kirim produk ini sebagai satu-satunya item via router state.
-   * TIDAK menyentuh cart utama sama sekali (bypass total).
-   */
   function handleBuyNow() {
     navigate("/checkout", { state: { buyNow: buildCartItem() } });
   }
@@ -123,11 +117,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
       productImage: product.image_url,
       buyerId: user.id,
       sellerId: product.seller_id,
-      sellerName: seller.displayName, // nama toko sebagai recipient
+      sellerName: seller.displayName,
     });
     setBarterLoading(false);
     if (convId) {
-      // Buka chat langsung pada conversation yang benar
       navigate("/chat", { state: { conversationId: convId } });
     }
   }
@@ -143,28 +136,55 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         onCartClick={() => navigate("/cart")}
         cartCount={cartCount}
       />
+
+      {/* Breadcrumb */}
       <div className="pdp-breadcrumb">
-        <span onClick={() => navigate(-1)} title="Kembali">← Back</span>
-        {" / "}
         <span onClick={() => navigate("/")}>Home</span>
-        {" / "}
-        <span>{product.category || "Fashion"}</span>
-        {" / "}
+        {product.category && (
+          <>
+            <span className="pdp-breadcrumb__sep"> / </span>
+            <span>{product.category}</span>
+          </>
+        )}
+        <span className="pdp-breadcrumb__sep"> / </span>
         <span>{product.title}</span>
       </div>
+
+      {/* Main layout */}
       <div className="pdp-container">
+
+        {/* Left: Image */}
         <div className="pdp-image-section">
-          <img src={product.image_url} alt={product.title} className="pdp-main-image" />
+          <img
+            src={product.image_url}
+            alt={product.title}
+            className="pdp-main-image"
+          />
         </div>
+
+        {/* Right: Info */}
         <div className="pdp-info-section">
           <h1 className="pdp-title">{product.title}</h1>
           <p className="pdp-condition">{product.condition}</p>
-          {seller.displayName && (
-            <p className="pdp-seller" title={seller.username ? `Penjual: ${seller.username}` : undefined}>
-              🏪 {seller.displayName}
-            </p>
-          )}
           <p className="pdp-price">Rp {Number(product.price).toLocaleString("id-ID")}</p>
+
+          {/* Quantity */}
+          <div className="pdp-quantity-section">
+            <span className="pdp-quantity-label">Quantity</span>
+            <div className="pdp-quantity-controls">
+              <button
+                className="pdp-qty-btn"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              >−</button>
+              <span className="pdp-qty-value">{quantity}</span>
+              <button
+                className="pdp-qty-btn"
+                onClick={() => setQuantity((q) => q + 1)}
+              >+</button>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
           <div className="pdp-actions">
             <button className="pdp-btn pdp-btn--buy" onClick={handleBuyNow}>
               Buy Now
@@ -177,17 +197,41 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
               onClick={handleChat}
               disabled={barterLoading}
             >
-              {barterLoading ? "Membuka chat..." : "Chat / Barter"}
+              {barterLoading ? "Membuka chat..." : "Barter"}
             </button>
           </div>
-          {product.description && (
-            <div className="pdp-details">
-              <h3>Details</h3>
-              <p>{product.description}</p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Shop Card */}
+      <div className="pdp-shop-section">
+        <div className="pdp-shop-card">
+          <div className="pdp-shop-info">
+            <div className="pdp-shop-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+            </div>
+            <span className="pdp-shop-name">
+              {seller.displayName || "Shop Name"}
+            </span>
+          </div>
+          <button className="pdp-chat-btn" onClick={handleChat} disabled={barterLoading}>
+            {barterLoading ? "..." : "Chat"}
+          </button>
+        </div>
+      </div>
+
+      {/* Details */}
+      {product.description && (
+        <div className="pdp-details-section">
+          <h2 className="pdp-details-title">Details</h2>
+          <div className="pdp-details-box">
+            <p className="pdp-details-text">{product.description}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
