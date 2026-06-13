@@ -1,17 +1,29 @@
+/* The chat page is a fixed-height viewport column: navbar on top, the
+   chat body fills the rest. overflow:hidden guarantees the page itself
+   never scrolls, so the input can never be pushed off-screen. */
 .chat-page {
   background: #E8ECEC;
   height: 100vh;
   height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+/* The navbar keeps its natural height and must not shrink. */
+.chat-page > .navbar {
+  flex: 0 0 auto;
+}
+
 /* Body wrapper hosts the shared Seller Center chat layout so the buyer
    chat is visually identical to the seller chat. It fills the space
-   under the navbar; the inner .seller-chat-layout takes height: 100%. */
+   under the navbar via flex (not a percentage height) so the chat fits
+   the viewport exactly: only the message list scrolls and the input
+   stays pinned at the bottom. min-height:0 lets the inner scroll. */
 .chat-page__body {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   max-width: 960px;
   width: 100%;
@@ -20,11 +32,18 @@
   box-shadow: 0 0 0 1px #e0e0e0;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
 }
 
+/* Override the dashboard's height:100% with flex sizing so the layout
+   never grows past the available space (which was pushing the input
+   off-screen). It now fills exactly the body height and no more. */
 .chat-page__body .seller-chat-layout {
-  flex: 1;
+  flex: 1 1 auto;
   width: 100%;
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Empty/login state */

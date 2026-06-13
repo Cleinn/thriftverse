@@ -22,13 +22,7 @@ export default function WindowShorts({ user }) {
       <h2 className="shorts__title">Featured ThriftVid</h2>
       <div className="shorts__track">
         {shortsData.map((item, index) => (
-          <button key={item.id} className="shorts__card" onClick={() => setActiveIndex(index)}>
-            <img src={item.thumbnail} alt={item.account} className="shorts__thumbnail" />
-            <span className="shorts__badge">{item.label}</span>
-            <div className="shorts__overlay">
-              <span className="shorts__account">{item.account}</span>
-            </div>
-          </button>
+          <ShortsCard key={item.id} item={item} onOpen={() => setActiveIndex(index)} />
         ))}
       </div>
 
@@ -41,6 +35,62 @@ export default function WindowShorts({ user }) {
         />
       )}
     </section>
+  );
+}
+
+/* Feed card. Video items autoplay (muted) when scrolled into view and
+   pause when they leave the viewport, via an IntersectionObserver.
+   Image items keep their static thumbnail. */
+function ShortsCard({ item, onOpen }) {
+  const cardRef = useRef(null);
+  const videoRef = useRef(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    if (item.type !== "video") return;
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio >= 0.6),
+      { threshold: [0, 0.6, 1] }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [item.type]);
+
+  // Play / pause the muted preview as it enters / leaves the viewport.
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (inView) {
+      const p = vid.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [inView]);
+
+  return (
+    <button ref={cardRef} className="shorts__card" onClick={onOpen}>
+      {item.type === "video" ? (
+        <video
+          ref={videoRef}
+          className="shorts__thumbnail"
+          src={item.src}
+          poster={item.thumbnail}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+      ) : (
+        <img src={item.thumbnail} alt={item.account} className="shorts__thumbnail" />
+      )}
+      <span className="shorts__badge">{item.label}</span>
+      <div className="shorts__overlay">
+        <span className="shorts__account">{item.account}</span>
+      </div>
+    </button>
   );
 }
 

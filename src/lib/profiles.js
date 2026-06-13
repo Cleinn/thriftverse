@@ -46,16 +46,49 @@ export async function isShopSetupComplete(userId) {
 /**
  * Persist shop data. Source of truth = profiles table (publicly
  * readable); auth metadata is mirrored for the seller's own session.
+ *
+ * A first-time seller may have no row in `profiles` yet. We must not
+ * clobber an existing username, and `profiles.username` is NOT NULL, so:
+ *   - if a row already exists, UPDATE only the shop fields;
+ *   - if no row exists, INSERT a new one and supply a username derived
+ *     from the user's auth data (the column cannot be null).
+ * The previous plain UPDATE silently matched zero rows for first-time
+ * sellers, which trapped them in the onboarding loop.
  */
-export async function saveShopProfile(userId, { name, description, contact }) {
-  const { error: profileError } = await supabase
+export async function saveShopProfile(userId, { name, description, contact }, user) {
+  const shopFields = {
+    shop_name: name?.trim() || null,
+    shop_description: description?.trim() || null,
+    shop_contact: contact?.trim() || null,
+  };
+
+  // Does a profile row already exist for this user?
+  const { data: existing } = await supabase
     .from("profiles")
-    .update({
-      shop_name: name?.trim() || null,
-      shop_description: description?.trim() || null,
-      shop_contact: contact?.trim() || null,
-    })
-    .eq("id", userId);
+    .select("id, username")
+    .eq("id", userId)
+    .maybeSingle();
+
+  let profileError;
+  if (existing) {
+    // Row present: only touch the shop fields, never the username.
+    ({ error: profileError } = await supabase
+      .from("profiles")
+      .update(shopFields)
+      .eq("id", userId));
+  } else {
+    // Row missing: create it. username is NOT NULL, so derive a fallback
+    // from auth metadata / email, falling back to a stable id-based value.
+    const fallbackUsername =
+      user?.user_metadata?.username ||
+      user?.user_metadata?.full_name ||
+      user?.email?.split("@")[0] ||
+      `user_${String(userId).slice(0, 8)}`;
+
+    ({ error: profileError } = await supabase
+      .from("profiles")
+      .insert({ id: userId, username: fallbackUsername, ...shopFields }));
+  }
 
   if (profileError) return { error: profileError };
 

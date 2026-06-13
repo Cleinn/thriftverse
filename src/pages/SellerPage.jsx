@@ -25,7 +25,10 @@ export default function SellerPage({ user, onBack }) {
   const handleBack = onBack || (() => navigate(-1));
   const [activeTab, setActiveTab] = useState("overview");
 
-  const [gate, setGate] = useState("checking");
+  // ---------- ONBOARDING GATE ----------
+  // The dashboard stays LOCKED until profiles.shop_name exists.
+  // First-time sellers are redirected to the mandatory Shop Setup page.
+  const [gate, setGate] = useState("checking"); // checking | ready
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -216,7 +219,7 @@ export default function SellerPage({ user, onBack }) {
       setShopMsg("Nama toko tidak boleh kosong.");
       return;
     }
-    const { error } = await saveShopProfile(user.id, shopForm);
+    const { error } = await saveShopProfile(user.id, shopForm, user);
     if (error) { setShopMsgType("error"); setShopMsg("Failed to save: " + error.message); }
     else { setShopMsgType("success"); setShopMsg("Shop profile saved!"); }
   }

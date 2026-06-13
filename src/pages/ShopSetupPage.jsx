@@ -33,7 +33,7 @@ export default function ShopSetupPage({ user }) {
     }
     setSaving(true);
     setMsg("");
-    const { error } = await saveShopProfile(user.id, form);
+    const { error } = await saveShopProfile(user.id, form, user);
     setSaving(false);
     if (error) {
       setMsg("Gagal menyimpan: " + error.message);
@@ -72,7 +72,7 @@ export default function ShopSetupPage({ user }) {
           <span className="shop-setup-step">2. Dashboard</span>
         </div>
 
-        <h1 className="shop-setup-title">Siapkan Toko Kamu Dulu 🏪</h1>
+        <h1 className="shop-setup-title">Siapkan Toko Kamu Dulu</h1>
         <p className="shop-setup-sub">
           Sebelum bisa mengakses Seller Dashboard dan mulai berjualan,
           lengkapi profil toko kamu. Nama toko ini yang akan dilihat
