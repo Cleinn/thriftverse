@@ -73,7 +73,7 @@
   display: block;
 }
 
-/* ── Viewer ── */
+
 .shorts-viewer {
   position: fixed;
   inset: 0;
@@ -82,8 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Respect notches / status bars so the stage + controls are never
-     clipped at the top on devices with safe-area insets. */
+  
   padding:
     calc(1.5rem + env(safe-area-inset-top, 0px))
     calc(1.5rem + env(safe-area-inset-right, 0px))
@@ -112,10 +111,7 @@
 }
 .shorts-viewer__close:hover { background: rgba(255,255,255,0.3); }
 
-/* Frame wraps the stage + the right action rail so the rail can anchor
-   to the stage's right edge regardless of viewport size. The right
-   padding reserves room for the rail so the whole composition stays
-   centered and the icons are never clipped at the viewport edge. */
+
 .shorts-viewer__frame {
   position: relative;
   display: flex;
@@ -126,15 +122,12 @@
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* When comments open, the whole video/frame slides slightly to the left
-   so the comment panel has room to slide in on the right. */
+
 .shorts-viewer__frame--comments {
   transform: translateX(-9.5rem);
 }
 
-/* Stage clips both items during transition. It keeps a 9:16 portrait
-   ratio but scales down to fit the available viewport height so the
-   top/bottom are never cut off. */
+
 .shorts-viewer__stage {
   width: min(340px, calc((100dvh - 3rem) * 0.5625));
   aspect-ratio: 9 / 16;
@@ -146,7 +139,7 @@
   flex-shrink: 0;
 }
 
-/* Both items sit absolutely inside the stage */
+
 .shorts-viewer__item {
   position: absolute;
   inset: 0;
@@ -161,14 +154,14 @@
   display: block;
 }
 
-/* Click zone covers the media for single-click pause / double-click like */
+
 .shorts-viewer__clickzone {
   position: absolute;
   inset: 0;
   cursor: pointer;
 }
 
-/* Pause indicator shown on single click */
+
 .shorts-viewer__pause {
   position: absolute;
   top: 50%;
@@ -191,7 +184,7 @@
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Heart burst shown on double click to like */
+
 .shorts-viewer__burst {
   position: absolute;
   top: 50%;
@@ -209,7 +202,7 @@
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15); }
 }
 
-/* ── Green interactive seekbar (pinned to bottom of the video) ── */
+
 .shorts-seekbar {
   position: absolute;
   left: 0;
@@ -252,7 +245,7 @@
 }
 .shorts-seekbar:hover .shorts-seekbar__thumb { opacity: 1; }
 
-/* ── Bottom meta bar: avatar + title + username ── */
+
 .shorts-meta {
   position: absolute;
   left: 0;
@@ -294,7 +287,7 @@
   font-weight: 500;
 }
 
-/* ── Right-side action rail ── */
+
 .shorts-viewer__actions {
   position: absolute;
   right: 18px;
@@ -331,7 +324,7 @@
   100% { transform: scale(1); }
 }
 
-/* ── Comment panel ── dark-blue, slides in on the RIGHT of the video ── */
+
 .shorts-comments {
   position: absolute;
   left: calc(100% + 1.25rem);
@@ -411,7 +404,7 @@
   word-break: break-word;
 }
 
-/* Comment input row */
+
 .shorts-comments__input-area {
   display: flex;
   align-items: center;
@@ -448,9 +441,9 @@
 .shorts-comments__post:hover:not(:disabled) { background: #50d456; }
 .shorts-comments__post:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Animations ── */
 
-/* Going to NEXT (scroll down): old exits up, new enters from bottom */
+
+
 @keyframes exitUp {
   from { transform: translateY(0);     opacity: 1; }
   to   { transform: translateY(-100%); opacity: 0.3; }
@@ -460,7 +453,7 @@
   to   { transform: translateY(0);     opacity: 1; }
 }
 
-/* Going to PREV (scroll up): old exits down, new enters from top */
+
 @keyframes exitDown {
   from { transform: translateY(0);    opacity: 1; }
   to   { transform: translateY(100%); opacity: 0.3; }
@@ -488,7 +481,7 @@
   z-index: 2;
 }
 
-/* Nav buttons */
+
 .shorts-viewer__prev,
 .shorts-viewer__next {
   position: fixed;
@@ -512,11 +505,10 @@
 .shorts-viewer__prev:hover,
 .shorts-viewer__next:hover { background: rgba(255,255,255,0.3); }
 
-/* ── Responsive ── */
+
 @media (max-width: 600px) {
   .shorts__card { flex: 0 0 128px; height: 230px; }
-  /* On phones the stage fills the screen and the rail overlays the
-     right edge of the video, so the reserved desktop padding is dropped. */
+  
   .shorts-viewer {
     padding: 0;
   }
@@ -533,7 +525,7 @@
     aspect-ratio: auto;
     border-radius: 0;
   }
-  /* On a full-screen stage the rail overlays the right edge of the video */
+  
   .shorts-viewer__actions {
     right: 12px;
     top: auto;
@@ -543,8 +535,7 @@
   .shorts-action {
     background: rgba(255,255,255,0.92);
   }
-  /* On phones the video is full-screen, so the comment panel becomes a
-     bottom sheet and the frame is not shifted. */
+  
   .shorts-viewer__frame--comments {
     transform: none;
   }

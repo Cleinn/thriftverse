@@ -34,7 +34,6 @@ export default function CartPage({ user, onLoginClick, onCartUpdate }) {
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // AUTH GATE: viewing the cart requires a logged-in user.
   if (!user) {
     return (
       <div className="cart-page">
@@ -86,7 +85,7 @@ export default function CartPage({ user, onLoginClick, onCartUpdate }) {
                   <input type="checkbox" defaultChecked />
                   <div className="cart-item__inner">
                     <div className="cart-item__seller">
-                      🏪 {item.seller_display_name || item.seller_shop_name || item.seller_username || item.seller_name || "Penjual"}
+                      {item.seller_display_name || item.seller_shop_name || item.seller_username || item.seller_name || "Penjual"}
                     </div>
                     <div className="cart-item__row">
                       <img src={item.image_url} alt={item.title} className="cart-item__img" />
@@ -104,8 +103,14 @@ export default function CartPage({ user, onLoginClick, onCartUpdate }) {
                       <button
                         className="cart-item__remove"
                         onClick={() => removeItem(item.product_id)}
+                        aria-label="Hapus"
                       >
-                        🗑
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 6h18" />
+                          <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" />
+                        </svg>
                       </button>
                     </div>
                   </div>

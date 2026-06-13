@@ -1,12 +1,5 @@
 import { supabase } from "./supabase";
 
-/**
- * Fetch a seller's public shop profile from `profiles`.
- * Shop name MUST come from `profiles` (auth metadata of another
- * user is never readable by buyers).
- *
- * Returns: { shopName, shopDescription, shopContact, username, displayName }
- */
 export async function fetchSellerProfile(sellerId) {
   const empty = {
     shopName: null,
@@ -34,28 +27,41 @@ export async function fetchSellerProfile(sellerId) {
   };
 }
 
-/**
- * Onboarding check: a seller account is "set up" only when a
- * shop_name exists in the profiles table.
- */
 export async function isShopSetupComplete(userId) {
   const { shopName } = await fetchSellerProfile(userId);
   return Boolean(shopName && shopName.trim());
 }
 
-/**
- * Persist shop data. Source of truth = profiles table (publicly
- * readable); auth metadata is mirrored for the seller's own session.
- */
-export async function saveShopProfile(userId, { name, description, contact }) {
-  const { error: profileError } = await supabase
+export async function saveShopProfile(userId, { name, description, contact }, user) {
+  const shopFields = {
+    shop_name: name?.trim() || null,
+    shop_description: description?.trim() || null,
+    shop_contact: contact?.trim() || null,
+  };
+
+  const { data: existing } = await supabase
     .from("profiles")
-    .update({
-      shop_name: name?.trim() || null,
-      shop_description: description?.trim() || null,
-      shop_contact: contact?.trim() || null,
-    })
-    .eq("id", userId);
+    .select("id, username")
+    .eq("id", userId)
+    .maybeSingle();
+
+  let profileError;
+  if (existing) {
+    ({ error: profileError } = await supabase
+      .from("profiles")
+      .update(shopFields)
+      .eq("id", userId));
+  } else {
+    const fallbackUsername =
+      user?.user_metadata?.username ||
+      user?.user_metadata?.full_name ||
+      user?.email?.split("@")[0] ||
+      `user_${String(userId).slice(0, 8)}`;
+
+    ({ error: profileError } = await supabase
+      .from("profiles")
+      .insert({ id: userId, username: fallbackUsername, ...shopFields }));
+  }
 
   if (profileError) return { error: profileError };
 

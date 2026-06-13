@@ -18,7 +18,6 @@
   object-position: center;
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .hero {
     height: 14rem;

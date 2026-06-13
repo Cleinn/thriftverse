@@ -4,11 +4,6 @@ import { isShopSetupComplete, saveShopProfile } from "../lib/profiles";
 import { Skeleton } from "../components/Skeleton";
 import "./ShopSetupPage.css";
 
-/**
- * SELLER ONBOARDING — mandatory first-time setup.
- * Users land here automatically the first time they open the Seller
- * Page. The Seller Dashboard stays locked until shop data is saved.
- */
 export default function ShopSetupPage({ user }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", description: "", contact: "" });
@@ -16,7 +11,6 @@ export default function ShopSetupPage({ user }) {
   const [checking, setChecking] = useState(true);
   const [msg, setMsg] = useState("");
 
-  // Already onboarded? Go straight to the dashboard.
   useEffect(() => {
     if (!user) return;
     isShopSetupComplete(user.id).then((done) => {
@@ -33,13 +27,12 @@ export default function ShopSetupPage({ user }) {
     }
     setSaving(true);
     setMsg("");
-    const { error } = await saveShopProfile(user.id, form);
+    const { error } = await saveShopProfile(user.id, form, user);
     setSaving(false);
     if (error) {
       setMsg("Gagal menyimpan: " + error.message);
       return;
     }
-    // Unlock the dashboard only AFTER the data is in the database
     navigate("/seller", { replace: true });
   }
 
@@ -72,7 +65,7 @@ export default function ShopSetupPage({ user }) {
           <span className="shop-setup-step">2. Dashboard</span>
         </div>
 
-        <h1 className="shop-setup-title">Siapkan Toko Kamu Dulu 🏪</h1>
+        <h1 className="shop-setup-title">Siapkan Toko Kamu Dulu</h1>
         <p className="shop-setup-sub">
           Sebelum bisa mengakses Seller Dashboard dan mulai berjualan,
           lengkapi profil toko kamu. Nama toko ini yang akan dilihat

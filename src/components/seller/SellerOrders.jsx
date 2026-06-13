@@ -7,16 +7,6 @@ import {
 } from "../../lib/orders";
 import { Skeleton } from "../Skeleton";
 
-/**
- * Seller order views, backed by the transactions table (realtime).
- * RLS guarantees the seller only ever receives rows where
- * transactions.seller_id = auth.uid().
- *
- * view = "incoming"   -> orders not yet shipped (pending / diproses),
- *                        each with a Ship Product action.
- * view = "expedition" -> shipped orders (dikirim / selesai), shown with
- *                        their shipping progress for tracking.
- */
 export default function SellerOrders({ user, onOrdersChange, view = "incoming" }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +23,6 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
       onOrdersChange?.(data);
     });
 
-    // REALTIME: a buyer just checked out, order pops in immediately
     const unsubscribe = subscribeToSellerOrders(user.id, (order) => {
       setOrders((prev) => {
         if (prev.some((o) => o.id === order.id)) return prev;
@@ -43,12 +32,8 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
       });
     });
     return () => { cancelled = true; unsubscribe(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Ship Product: advance the order to "dikirim". Once shipped it leaves
-  // Incoming Orders and shows up under Track Expedition automatically,
-  // because both views filter the same shared order list by status.
   async function handleShip(order) {
     setShippingId(order.id);
     setOrders((prev) => {
@@ -60,7 +45,6 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
     setShippingId(null);
     if (error) {
       alert("Gagal mengirim produk: " + error.message);
-      // revert on failure
       setOrders((prev) => {
         const next = prev.map((o) => (o.id === order.id ? { ...o, status: "diproses" } : o));
         onOrdersChange?.(next);
@@ -81,12 +65,11 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
       .join(", ");
   }
 
-  // Shipping progress steps for the expedition tracker
   const TRACK_STEPS = ["diproses", "dikirim", "selesai"];
   const TRACK_LABELS = { diproses: "Diproses", dikirim: "Dikirim", selesai: "Selesai" };
   function stepIndex(status) {
     const i = TRACK_STEPS.indexOf(status);
-    return i < 0 ? 1 : i; // shipped orders start at "dikirim"
+    return i < 0 ? 1 : i;
   }
 
   const isExpedition = view === "expedition";
@@ -149,7 +132,7 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
                   {new Date(order.created_at).toLocaleString("id-ID")}
                 </p>
 
-                {/* Expedition: visual shipping progress tracker */}
+                {}
                 {isExpedition && (
                   <div className="seller-track">
                     {TRACK_STEPS.map((step, i) => (
@@ -170,7 +153,7 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
                   {ORDER_STATUS_LABELS[order.status] || order.status}
                 </span>
 
-                {/* Incoming: Ship Product button advances to "dikirim" */}
+                {}
                 {!isExpedition && (
                   <button
                     className="seller-btn seller-btn--primary seller-ship-btn"
@@ -181,9 +164,7 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
                   </button>
                 )}
 
-                {/* Expedition is read-only for the seller. Only the buyer
-                    can confirm receipt and finalize the order, so the
-                    seller just sees the shipping status here. */}
+                {}
               </div>
             </div>
           ))}

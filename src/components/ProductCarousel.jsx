@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { SkeletonProductCard } from "./Skeleton";
@@ -9,32 +9,40 @@ export default function ProductCarousel() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
+
   const category = searchParams.get("category");
-  const query = (searchParams.get("q") || "").trim().toLowerCase();
+  const query = useMemo(
+    () => (searchParams.get("q") || "").trim().toLowerCase(),
+    [searchParams]
+  );
 
   useEffect(() => {
+    setLoading(true);   // reset every time
+    setProducts([]);    // clear stale cards
+
     fetchProducts()
       .then((data) => setProducts(data || []))
       .finally(() => setLoading(false));
-  }, []);
+  }, [category, query]); // re-fetch on param changes
 
-  // Filter by the active category from the URL (case-insensitive).
-  // "All" / no category shows everything.
-  let visibleProducts =
-    category && category !== "All"
-      ? products.filter(
-          (p) => (p.category || "").toLowerCase() === category.toLowerCase()
-        )
-      : products;
+  const visibleProducts = useMemo(() => {
+    let filtered =
+      category && category !== "All"
+        ? products.filter(
+            (p) => (p.category || "").toLowerCase() === category.toLowerCase()
+          )
+        : products;
 
-  // Search strictly filters products by title and description.
-  if (query) {
-    visibleProducts = visibleProducts.filter((p) => {
-      const title = (p.title || p.name || "").toLowerCase();
-      const desc = (p.description || "").toLowerCase();
-      return title.includes(query) || desc.includes(query);
-    });
-  }
+    if (query) {
+      filtered = filtered.filter((p) => {
+        const title = (p.title || p.name || "").toLowerCase();
+        const desc = (p.description || "").toLowerCase();
+        return title.includes(query) || desc.includes(query);
+      });
+    }
+
+    return filtered;
+  }, [products, category, query]);
 
   return (
     <section className="carousel" id="catalogue">

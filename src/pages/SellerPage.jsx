@@ -37,7 +37,6 @@ export default function SellerPage({ user, onBack }) {
     return () => { cancelled = true; };
   }, [user, navigate]);
 
-  // ---------- upload product form ----------
   const [product, setProduct] = useState({
     title: "",
     price: "",
@@ -53,7 +52,6 @@ export default function SellerPage({ user, onBack }) {
   const [productMsg, setProductMsg] = useState("");
   const [productMsgType, setProductMsgType] = useState("success");
 
-  // ---------- overview stats ----------
   const [stats, setStats] = useState({ listings: 0, revenue: 0, ordersToday: 0, chats: 0 });
 
   useEffect(() => {
@@ -83,9 +81,6 @@ export default function SellerPage({ user, onBack }) {
         }));
       });
 
-    // UNREAD BUYER CHATS — only conversations whose latest message is
-    // from the BUYER (i.e. the seller has not replied yet). We pull this
-    // seller's conversations, then check the most recent message in each.
     (async () => {
       const { data: convs } = await supabase
         .from("conversations")
@@ -106,8 +101,6 @@ export default function SellerPage({ user, onBack }) {
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
-          // Unread = there is a message AND it was sent by the buyer
-          // (anyone who is not the seller), meaning it's unreplied.
           return lastMsg && lastMsg.sender_id !== user.id ? 1 : 0;
         })
       );
@@ -117,7 +110,6 @@ export default function SellerPage({ user, onBack }) {
     })();
   }, [user, gate]);
 
-  // ---------- shop form ----------
   const [shopForm, setShopForm] = useState({ name: "", description: "", contact: "" });
   const [shopMsg, setShopMsg] = useState("");
   const [shopMsgType, setShopMsgType] = useState("success");
@@ -133,7 +125,6 @@ export default function SellerPage({ user, onBack }) {
     });
   }, [user, gate]);
 
-  // ---------- handlers ----------
   function handleImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -216,12 +207,11 @@ export default function SellerPage({ user, onBack }) {
       setShopMsg("Nama toko tidak boleh kosong.");
       return;
     }
-    const { error } = await saveShopProfile(user.id, shopForm);
+    const { error } = await saveShopProfile(user.id, shopForm, user);
     if (error) { setShopMsgType("error"); setShopMsg("Failed to save: " + error.message); }
     else { setShopMsgType("success"); setShopMsg("Shop profile saved!"); }
   }
 
-  // ---------- render ----------
   if (gate !== "ready") {
     return (
       <div className="seller-overlay">
@@ -288,7 +278,7 @@ export default function SellerPage({ user, onBack }) {
 
         <main className="seller-main">
 
-          {/* OVERVIEW */}
+          {}
           {activeTab === "overview" && (
             <div className="seller-content">
               <h1 className="seller-page-title">Overview</h1>
@@ -316,10 +306,10 @@ export default function SellerPage({ user, onBack }) {
             </div>
           )}
 
-          {/* MY LISTINGS — active/inactive management */}
+          {}
           {activeTab === "listings" && <SellerListings user={user} />}
 
-          {/* UPLOAD */}
+          {}
           {activeTab === "upload" && (
             <div className="seller-content">
               <h1 className="seller-page-title">Upload Product</h1>
@@ -412,7 +402,7 @@ export default function SellerPage({ user, onBack }) {
             </div>
           )}
 
-          {/* INCOMING ORDERS — realtime sales routed by seller_id */}
+          {}
           {activeTab === "orders" && (
             <SellerOrders
               user={user}
@@ -430,15 +420,15 @@ export default function SellerPage({ user, onBack }) {
             />
           )}
 
-          {/* EXPEDITION */}
+          {}
           {activeTab === "expedition" && (
             <SellerOrders user={user} view="expedition" />
           )}
 
-          {/* CHATS */}
+          {}
           {activeTab === "chats" && <SellerChats user={user} />}
 
-          {/* SHOP PROFILE */}
+          {}
           {activeTab === "shop" && (
             <div className="seller-content">
               <h1 className="seller-page-title">Shop Profile</h1>

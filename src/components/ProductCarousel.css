@@ -11,13 +11,15 @@
   line-height: 1.2;
 }
 
-/* 4-column responsive grid matching the reference layout */
 .carousel__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
 }
 
+.carousel__grid > * {
+  min-width: 0;
+}
 .carousel__empty {
   color: #888;
   font-size: 0.8125rem;

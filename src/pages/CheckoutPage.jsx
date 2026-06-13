@@ -46,8 +46,6 @@ const PAYMENT_OPTIONS = [
 export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpdate }) {
   const navigate = useNavigate();
   const location = useLocation();
-  // DIRECT CHECKOUT (Buy Now): produk tunggal dikirim via router state,
-  // dan flow ini TIDAK menyentuh / mencampur isi cart utama.
   const buyNowItem = location.state?.buyNow || null;
   const isBuyNow = Boolean(buyNowItem);
   const [cartItems, setCartItems] = useState([]);
@@ -67,13 +65,11 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
 
   useEffect(() => {
     if (isBuyNow) {
-      // Single Item Condition: hanya 1 produk ini yang diproses
       setCartItems([{ ...buyNowItem, quantity: buyNowItem.quantity || 1 }]);
       return;
     }
     const cart = JSON.parse(localStorage.getItem("thriftverse_cart") || "[]");
     setCartItems(cart);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -86,15 +82,11 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
       return;
     }
     if (!user) {
-      // Order harus terikat ke buyer_id agar bisa di-route ke seller
       onLoginClick?.();
       return;
     }
     setPlacing(true);
 
-    // ORDER ROUTING: tulis 1 baris order per item ke tabel transactions.
-    // Setiap baris membawa seller_id produk tsb, sehingga pesanan
-    // langsung muncul realtime di dashboard seller yang benar.
     const { error } = await createOrdersFromCheckout({
       buyerId: user.id,
       items: cartItems,
@@ -110,8 +102,6 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
       return;
     }
 
-    // Buy Now TIDAK boleh mengosongkan cart utama (bypass cart);
-    // hanya checkout dari cart yang membersihkan cart.
     if (!isBuyNow) {
       localStorage.removeItem("thriftverse_cart");
       onCartUpdate?.();
@@ -160,11 +150,21 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
         onCartClick={() => navigate("/cart")}
       />
 
+      <div className="co-header-strip">
+        <div className="co-header-strip__inner">
+          <span className="co-step co-step--active">① Keranjang</span>
+          <span className="co-step-arrow">›</span>
+          <span className="co-step co-step--current">② Checkout</span>
+          <span className="co-step-arrow">›</span>
+          <span className="co-step">③ Selesai</span>
+        </div>
+      </div>
+
       <div className="co-layout">
-        {/* LEFT COLUMN */}
+        {}
         <div className="co-left">
 
-          {/* Address */}
+          {}
           <section className="co-card">
             <h3 className="co-card__title">
               Alamat Pengiriman
@@ -225,7 +225,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
             </div>
           </section>
 
-          {/* Items */}
+          {}
           <section className="co-card">
             <h3 className="co-card__title">
               Produk ({cartItems.length} item)
@@ -253,7 +253,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
             </div>
           </section>
 
-          {/* Shipping */}
+          {}
           <section className="co-card">
             <h3 className="co-card__title">
               Pilih Pengiriman
@@ -281,7 +281,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
             </div>
           </section>
 
-          {/* Payment */}
+          {}
           <section className="co-card">
             <h3 className="co-card__title">
               Metode Pembayaran
@@ -318,7 +318,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
 
         </div>
 
-        {/* RIGHT COLUMN - Summary */}
+        {}
         <div className="co-right">
           <section className="co-card co-summary">
             <h3 className="co-card__title">Ringkasan Pesanan</h3>

@@ -11,7 +11,6 @@
   animation: tvFadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -19,7 +18,6 @@
   }
 }
 
-/* Buttons: consistent, snappy press/hover feedback (existing styles kept) */
 button {
   transition: opacity 0.18s ease, transform 0.12s ease,
               box-shadow 0.18s ease, background-color 0.18s ease;
@@ -43,26 +41,21 @@ button:active:not(:disabled) { transform: scale(0.97); }
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* Cards & list rows glide subtly */
 .product-card, .cart-item, .co-card, .chat-conv-item, .seller-stat-card {
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
 }
 .product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1); }
 .chat-conv-item:hover { transform: translateX(2px); }
 
-/* Dropdown & modal pop-in (palette untouched) */
 .navbar__dropdown { animation: tvFadeUp 0.18s ease both; transform-origin: top right; }
 .login-overlay, .register-overlay, .seller-overlay { animation: tvFadeIn 0.2s ease both; }
 
-/* Chat bubbles slide in as they arrive (realtime feel) */
 .chat-bubble { animation: tvFadeUp 0.22s ease both; }
 
-/* Inputs: gentle focus ring without changing colors */
 input:focus, textarea:focus, select:focus {
   transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
-/* Lightweight loading spinner used in loading states */
 @keyframes tvSpin { to { transform: rotate(360deg); } }
 .tv-spinner {
   display: inline-block;
@@ -77,10 +70,8 @@ input:focus, textarea:focus, select:focus {
   opacity: 0.7;
 }
 
-/* Smooth in-page scrolling (chat autoscroll etc.) */
 html { scroll-behavior: smooth; }
 
-/* Full-app boot skeleton (replaces the old text "Loading..." screen) */
 .app-boot-skeleton {
   max-width: 1100px;
   margin: 0 auto;
