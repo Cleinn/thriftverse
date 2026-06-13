@@ -1,6 +1,6 @@
 <p align="center">
-  <!-- [Masukkan logo ThriftVerse. Disarankan ukuran 200x200px, format PNG transparan. Upload ke Imagekit dan ganti URL di bawah.] -->
-  <img alt="ThriftVerse" title="ThriftVerse" src="https://ik.imagekit.io/your-imagekit-id/thriftverse/logo.png" width="200">
+
+  <img alt="ThriftVerse" title="ThriftVerse" src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Logo.svg" width="200">
 </p>
 
 <p align="center">
@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <!-- [Opsional: tambahkan badge seperti React version, Supabase, atau Vite. Bisa generate dari https://shields.io] -->
+
   <img src="https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/Vite-4.4.0-646CFF?logo=vite" alt="Vite" />
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase" alt="Supabase" />
@@ -26,13 +26,13 @@ Built to address the growing fast fashion crisis, ThriftVerse empowers Gen Z and
 
 ## 📌 Overview
 
-| Field        | Details                                                     |
-|--------------|-------------------------------------------------------------|
-| **Name**     | ThriftVerse                                                 |
-| **Type**     | Social-Driven Second-Hand Fashion Marketplace               |
-| **Frontend** | React 18 + Vite + React Router DOM                          |
-| **Backend**  | Supabase (Auth, Realtime, Storage)                          |
-| **Database** | PostgreSQL (via Supabase)                                   |
+| Field        | Details                                                                         |
+|--------------|---------------------------------------------------------------------------------|
+| **Name**     | ThriftVerse                                                                     |
+| **Type**     | Social-Driven Second-Hand Fashion Marketplace                                   |
+| **Frontend** | React 18 + Vite + React Router DOM                                              |
+| **Backend**  | Supabase (Auth, Realtime, Storage)                                              |
+| **Database** | PostgreSQL (via Supabase)                                                       |
 | **Target Users** | Gen Z, young adults, fashion enthusiasts, sustainable lifestyle communities |
 
 ---
@@ -74,9 +74,9 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 
 ### 🏠 Home Page
 
-<!-- [Masukkan screenshot halaman utama ThriftVerse yang menampilkan Navbar, Hero Banner, section ThriftVid, dan Product Carousel. Gunakan tampilan desktop (lebar ~1280px).] -->
+
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/home-page.png" width="700" alt="ThriftVerse Home Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Home%20Page.png" width="700" alt="ThriftVerse Home Page">
 </p>
 
 ---
@@ -85,29 +85,28 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 
 - **Login Modal**
 
-<!-- [Masukkan screenshot modal Login yang muncul saat tombol "Log In" di Navbar diklik. Tampilkan form dengan field email & password.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/login-modal.png" width="700" alt="Login Modal">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Login%20Modal.png" width="700" alt="Login Modal">
 </p>
 
 - **Register Page**
 
-<!-- [Masukkan screenshot halaman Register dengan form pendaftaran akun baru (nama, email, password, dll).] -->
+
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/register-page.png" width="700" alt="Register Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Register%20Page.png" width="700" alt="Register Page">
 </p>
 
 ---
 
 ### 🎬 ThriftVid
 
-<!-- [Masukkan screenshot section ThriftVid di Home Page yang menampilkan grid thumbnail video pendek dari para seller. Jika bisa, tambahkan juga screenshot saat viewer video terbuka (fullscreen mode dengan komentar di samping).] -->
+
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/thriftvid-feed.png" width="700" alt="ThriftVid Feed">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/ThiftVid.png" width="700" alt="ThriftVid Feed">
 </p>
 
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/thriftvid-viewer.png" width="700" alt="ThriftVid Viewer with Comments">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/ThriftVid%20Viewer.png" width="700" alt="ThriftVid Viewer with Comments">
 </p>
 
 ---
@@ -116,23 +115,20 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 
 - **Product Carousel (Home)**
 
-<!-- [Masukkan screenshot Product Carousel di Home Page yang menampilkan daftar produk thrift dengan harga dan nama produk.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/product-carousel.png" width="700" alt="Product Carousel">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Product%20Carousel.png" width="700" alt="Product Carousel">
 </p>
 
 - **Product Detail Page**
 
-<!-- [Masukkan screenshot halaman detail produk yang menampilkan gambar produk, judul, harga, kondisi, deskripsi, nama toko seller, dan tombol Buy Now / Add to Cart / Barter.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/product-detail.png" width="700" alt="Product Detail Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Product%20Detail.png" width="700" alt="Product Detail Page">
 </p>
 
 - **Barter Offer**
 
-<!-- [Masukkan screenshot popup atau section Barter Picker yang muncul saat tombol "Barter" diklik — menampilkan daftar produk milik buyer untuk ditawarkan ke seller.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/barter-picker.png" width="700" alt="Barter Offer Picker">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Barter%20Offer.png" width="700" alt="Barter Offer Picker">
 </p>
 
 ---
@@ -141,36 +137,36 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 
 - **Cart Page**
 
-<!-- [Masukkan screenshot halaman Cart yang menampilkan daftar produk yang ditambahkan, jumlah, harga per item, dan total harga. Tampilkan juga tombol Checkout.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/cart-page.png" width="700" alt="Cart Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Cart%20Page.png" width="700" alt="Cart Page">
 </p>
 
 - **Checkout Page**
 
-<!-- [Masukkan screenshot halaman Checkout yang menampilkan form alamat pengiriman, pilihan metode pengiriman (Reguler / Express / Same Day), pilihan metode pembayaran (BCA VA, GoPay, QRIS, dll), dan ringkasan total order.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/checkout-page.png" width="700" alt="Checkout Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Checkout%20Page%201.png" width="700" alt="Checkout Page">
 </p>
+<p align="center">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Checkout%20Page%202.png" width="700" alt="Checkout Page">
+</p>
+
 
 - **Order Confirmation**
 
-<!-- [Masukkan screenshot tampilan setelah order berhasil dibuat — bisa berupa alert sukses, halaman konfirmasi, atau redirect ke halaman Purchases.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/order-confirmation.png" width="700" alt="Order Confirmation">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Order%20Confirmation.png" width="700" alt="Order Confirmation">
 </p>
 
 ---
 
 ### 💬 In-App Chat
 
-<!-- [Masukkan screenshot halaman Chat yang menampilkan daftar percakapan di kiri dan bubble chat di kanan. Jika ada, tampilkan juga barter card yang muncul dalam percakapan (bubble dengan label "🔁 Penawaran Barter").] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/chat-page.png" width="700" alt="Chat Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Barter%20Chat%20Card%201.png" width="700" alt="Chat Page">
 </p>
 
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/barter-chat-card.png" width="700" alt="Barter Offer in Chat">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Barter%20Chat%20Card%202.png" width="700" alt="Chat Page">
 </p>
 
 ---
@@ -179,44 +175,38 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 
 - **Shop Setup (Onboarding)**
 
-<!-- [Masukkan screenshot halaman Shop Setup yang muncul untuk seller baru sebelum bisa masuk ke dashboard — form untuk nama toko, deskripsi, dll.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/shop-setup.png" width="700" alt="Shop Setup Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Shop%20Setup.png" width="700" alt="Shop Setup Page">
 </p>
 
 - **Seller Overview**
 
-<!-- [Masukkan screenshot tab Overview di Seller Dashboard yang menampilkan statistik seperti total listings, pendapatan, order hari ini, dan jumlah chat masuk.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/seller-overview.png" width="700" alt="Seller Dashboard Overview">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Seller%20Overview.png" width="700" alt="Seller Dashboard Overview">
 </p>
 
 - **My Listings**
 
-<!-- [Masukkan screenshot tab My Listings di Seller Dashboard yang menampilkan daftar produk yang sudah diupload oleh seller beserta status dan opsi edit/hapus.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/seller-listings.png" width="700" alt="Seller My Listings">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Seller%20Listings.png" width="700" alt="Seller My Listings">
 </p>
 
 - **Upload Product**
 
-<!-- [Masukkan screenshot form Upload Product di Seller Dashboard — form dengan field judul, harga, deskripsi, kategori, kondisi, lokasi, stok, dan upload gambar.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/seller-upload-product.png" width="700" alt="Upload Product Form">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Seller%20Upload%20Product.png" width="700" alt="Upload Product Form">
 </p>
 
 - **Incoming Orders**
 
-<!-- [Masukkan screenshot tab Incoming Orders yang menampilkan daftar pesanan masuk dari buyer beserta status order dan tombol untuk update status pengiriman.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/seller-incoming-orders.png" width="700" alt="Seller Incoming Orders">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Seller%20Incoming%20Orders.png" width="700" alt="Seller Incoming Orders">
 </p>
 
 - **Buyer Chats (from Seller Side)**
 
-<!-- [Masukkan screenshot tab Buyer Chats di Seller Dashboard yang menampilkan daftar percakapan dari para buyer, termasuk notifikasi barter offer jika ada.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/seller-buyer-chats.png" width="700" alt="Seller Buyer Chats">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Seller%20Buyer%20Chats.png" width="700" alt="Seller Buyer Chats">
 </p>
 
 ---
@@ -225,66 +215,60 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 
 - **My Purchases**
 
-<!-- [Masukkan screenshot halaman Purchases yang menampilkan daftar semua order yang pernah dibuat oleh buyer, beserta status order.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/purchases-list.png" width="700" alt="My Purchases">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/My%20Purchases.png" width="700" alt="My Purchases">
 </p>
 
 - **Expedition Tracker**
 
-<!-- [Masukkan screenshot tab Track Expedition di halaman Purchases yang menampilkan progress bar/step tracker dengan status: Dipesan → Diproses → Dikirim → Selesai.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/expedition-tracker.png" width="700" alt="Expedition Tracker">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Expedition%20Tracker.png" width="700" alt="Expedition Tracker">
 </p>
 
 ---
 
 ### 👤 Profile Page
 
-<!-- [Masukkan screenshot halaman Profile yang menampilkan foto profil, nama, username, email, dan form edit profil pengguna.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/screenshots/profile-page.png" width="700" alt="Profile Page">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Profile%20Page.png" width="700" alt="Profile Page">
 </p>
 
 ---
 
-## 🌍 Feature Demo (GIF)
-
-<!-- [Opsional tapi sangat dianjurkan untuk nilai Sangat Baik — rekam GIF demo untuk setiap flow utama menggunakan tools seperti LICEcap, Kap (Mac), atau ScreenToGif. Upload ke Imagekit.] -->
+## 🌍 Feature Demo
 
 - **Register & Login**
 
-<!-- [Masukkan GIF demo alur Register akun baru, lalu Login menggunakan akun tersebut.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/demo/register-login.gif" width="700" alt="Demo Register & Login">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Demo%20Register.gif" width="700" alt="Demo Register & Login">
 </p>
+<p align="center">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Demo%20Login.gif" width="700" alt="Demo Register & Login">
+</p>
+
 
 - **Browse & Buy a Product**
 
-<!-- [Masukkan GIF demo alur dari Home Page → klik produk → Product Detail → Add to Cart → Checkout → Order sukses.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/demo/browse-and-buy.gif" width="700" alt="Demo Browse and Buy">
+  <img src="src/assets/Demo Buy.gif" width="700" alt="Demo Browse and Buy">
 </p>
 
 - **Barter a Product**
 
-<!-- [Masukkan GIF demo alur penawaran barter: buka halaman Product Detail → klik Barter → pilih produk milik sendiri → kirim penawaran → tampilkan barter card di Chat.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/demo/barter-flow.gif" width="700" alt="Demo Barter Flow">
+  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Demo%20Barter%20Flow.gif" width="700" alt="Demo Barter Flow">
 </p>
 
 - **Seller Upload & Manage Product**
 
-<!-- [Masukkan GIF demo seller: login → buka Seller Dashboard → upload produk baru → lihat di My Listings.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/demo/seller-upload.gif" width="700" alt="Demo Seller Upload Product">
+  <img src="src/assets/Demo Seller Upload Product.gif" width="700" alt="Demo Seller Upload Product">
 </p>
 
 - **Track Order (Buyer)**
 
-<!-- [Masukkan GIF demo buyer membuka halaman Purchases → Track Expedition → melihat status order berubah step by step.] -->
 <p align="center">
-  <img src="https://ik.imagekit.io/your-imagekit-id/thriftverse/demo/track-order.gif" width="700" alt="Demo Track Order">
+  <img src="src/assets/Demo Track Order.gif" width="700" alt="Demo Track Order">
 </p>
 
 ---
@@ -353,17 +337,8 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 > You can find these values in your Supabase project dashboard under **Settings → API**.
 
-### 4. Set Up the Supabase Database
 
-<!-- [Opsional: jika ada file SQL schema atau migration, sertakan langkah untuk menjalankannya. Contoh:] -->
-<!-- Import the database schema from the `supabase/` folder into your Supabase project via the SQL Editor or Supabase CLI. -->
-
-```bash
-# If using Supabase CLI:
-supabase db push
-```
-
-### 5. Start the Development Server
+### 4. Start the Development Server
 
 ```bash
 npm run dev
@@ -371,7 +346,7 @@ npm run dev
 
 The app will be available at `http://localhost:5173`.
 
-### 6. Build for Production
+### 5. Build for Production
 
 ```bash
 npm run build
