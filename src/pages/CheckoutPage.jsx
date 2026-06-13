@@ -160,16 +160,6 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
         onCartClick={() => navigate("/cart")}
       />
 
-      <div className="co-header-strip">
-        <div className="co-header-strip__inner">
-          <span className="co-step co-step--active">① Keranjang</span>
-          <span className="co-step-arrow">›</span>
-          <span className="co-step co-step--current">② Checkout</span>
-          <span className="co-step-arrow">›</span>
-          <span className="co-step">③ Selesai</span>
-        </div>
-      </div>
-
       <div className="co-layout">
         {/* LEFT COLUMN */}
         <div className="co-left">
