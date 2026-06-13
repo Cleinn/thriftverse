@@ -776,3 +776,75 @@
     justify-content: space-between;
   }
 }
+
+/* Ship Product button (reuses the existing primary green tokens) */
+.seller-ship-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  white-space: nowrap;
+}
+.seller-btn--primary {
+  background: #65E66B;
+  color: #020617;
+}
+.seller-btn--primary:hover { background: #50d456; }
+.seller-ship-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.seller-btn {
+  background: #fff;
+  color: #111;
+  border: 1px solid #e0e4eb;
+}
+.seller-btn:hover { border-color: #65E66B; }
+
+/* Expedition shipping progress tracker */
+.seller-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 0.625rem;
+}
+.seller-track__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  gap: 4px;
+}
+.seller-track__step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #e0e4eb;
+  z-index: 0;
+}
+.seller-track__step--done:not(:last-child)::after {
+  background: #65E66B;
+}
+.seller-track__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e0e4eb;
+  position: relative;
+  z-index: 1;
+}
+.seller-track__step--done .seller-track__dot {
+  background: #65E66B;
+}
+.seller-track__label {
+  font-size: 0.6875rem;
+  color: #888;
+}
+.seller-track__step--done .seller-track__label {
+  color: #15803d;
+  font-weight: 600;
+}

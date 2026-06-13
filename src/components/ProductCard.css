@@ -1,6 +1,5 @@
 .product-card {
-  min-width: 9.25rem;
-  flex-shrink: 0;
+  width: 100%;
   cursor: pointer;
   border: 1px solid #ccc;
   border-radius: 7px;
@@ -15,8 +14,9 @@
 }
 
 .product-card__image {
-  border-radius: 6px;
-  height: 9.25rem;
+  border-radius: 6px 6px 0 0;
+  aspect-ratio: 1 / 1;
+  width: 100%;
   overflow: hidden;
   margin-bottom: 0.5rem;
   background: #f0f0f0;
@@ -30,45 +30,40 @@
 }
 
 .product-info {
-  padding: 0 0.625rem;
-  padding-bottom: 0.5rem;
+  padding: 0 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 .product-card__name {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 700;
   color: #111;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 9.25rem;
-}
-
-.product-card__desc {
-  font-size: 0.6875rem;
-  color: #888;
   margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 8.125rem;
+}
+
+.product-card__desc {
+  font-size: 0.8125rem;
+  color: #888;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-card__price {
-  font-size: 0.8125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #111;
 }
 
 @media (max-width: 600px) {
-  .product-card { 
-    min-width: 7.5rem; 
-  } 
-  .product-card__image { 
-    height: 7.5rem; 
-  }  
-  .product-card__name { 
-    max-width: 7.5rem; 
+  .product-card__name {
+    font-size: 0.8125rem;
+  }
+  .product-card__price {
+    font-size: 0.875rem;
   }
 }

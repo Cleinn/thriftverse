@@ -59,6 +59,64 @@ export async function updateOrderStatus(orderId, status) {
   return supabase.from("transactions").update({ status }).eq("id", orderId);
 }
 
+/** All orders placed by ONE buyer (newest first). */
+export async function fetchBuyerOrders(buyerId) {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("buyer_id", buyerId)
+    .order("created_at", { ascending: false });
+  return { data: data || [], error };
+}
+
+/**
+ * Buyer confirms the order was received. This finalizes the transaction
+ * by moving it to "selesai" (completed), which removes it from the
+ * active tracking tab on the buyer side.
+ */
+export async function confirmOrderReceived(orderId) {
+  return supabase
+    .from("transactions")
+    .update({ status: "selesai" })
+    .eq("id", orderId)
+    .select()
+    .single();
+}
+
+/**
+ * REALTIME for the BUYER: listen for both new orders and status changes
+ * on this buyer's transactions, so when a seller clicks "Ship Product"
+ * the buyer sees the updated status immediately, with no refresh.
+ * Returns an unsubscribe function.
+ */
+export function subscribeToBuyerOrders(buyerId, { onInsert, onUpdate } = {}) {
+  const channel = supabase
+    .channel("buyer-orders:" + buyerId)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "transactions",
+        filter: `buyer_id=eq.${buyerId}`,
+      },
+      (payload) => onInsert?.(payload.new)
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "transactions",
+        filter: `buyer_id=eq.${buyerId}`,
+      },
+      (payload) => onUpdate?.(payload.new)
+    )
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+}
+
 /**
  * REALTIME: push brand-new orders into the seller dashboard the
  * moment a buyer checks out — no refresh needed.

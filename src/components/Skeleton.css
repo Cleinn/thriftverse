@@ -71,8 +71,7 @@
 
 /* ---- Product card skeleton (carousel + grids) ---- */
 .tv-skel-product {
-  min-width: 9.25rem;
-  flex-shrink: 0;
+  width: 100%;
   border: 1px solid #eee;
   border-radius: 7px;
   background: #fff;
@@ -80,19 +79,15 @@
 }
 .tv-skel-product__img {
   width: 100%;
-  height: 9.25rem;
+  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: 0;
 }
 .tv-skel-product__body {
-  padding: 0.5rem 0.625rem 0.625rem;
+  padding: 0.5rem 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-}
-
-@media (max-width: 600px) {
-  .tv-skel-product { min-width: 7.5rem; }
-  .tv-skel-product__img { height: 7.5rem; }
 }
 
 /* Reduced motion: keep the shape, drop the animation */

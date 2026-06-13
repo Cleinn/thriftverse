@@ -1,5 +1,5 @@
 .shorts {
-  padding: 1.125rem 1.125rem 1.5rem;
+  padding: 0 0 1.75rem;
 }
 
 .shorts__title {
@@ -16,7 +16,7 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 6px 2px 10px;
+  padding: 0.5rem 0.25rem 0.75rem;
   scroll-behavior: smooth;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
@@ -26,7 +26,7 @@
 .shorts__card {
   position: relative;
   flex: 0 0 150px;
-  height: 215px;
+  height: 270px;
   border-radius: 12px;
   overflow: hidden;
   border: none;
@@ -77,7 +77,7 @@
 .shorts-viewer {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 100000;
   background: rgba(0,0,0,0.9);
   display: flex;
   align-items: center;
@@ -85,10 +85,10 @@
   /* Respect notches / status bars so the stage + controls are never
      clipped at the top on devices with safe-area insets. */
   padding:
-    env(safe-area-inset-top, 0px)
-    env(safe-area-inset-right, 0px)
-    env(safe-area-inset-bottom, 0px)
-    env(safe-area-inset-left, 0px);
+    calc(1.5rem + env(safe-area-inset-top, 0px))
+    calc(1.5rem + env(safe-area-inset-right, 0px))
+    calc(1.5rem + env(safe-area-inset-bottom, 0px))
+    calc(1.5rem + env(safe-area-inset-left, 0px));
   box-sizing: border-box;
 }
 
@@ -112,14 +112,31 @@
 }
 .shorts-viewer__close:hover { background: rgba(255,255,255,0.3); }
 
-/* Stage clips both items during transition */
+/* Frame wraps the stage + the right action rail so the rail can anchor
+   to the stage's right edge regardless of viewport size. The right
+   padding reserves room for the rail so the whole composition stays
+   centered and the icons are never clipped at the viewport edge. */
+.shorts-viewer__frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 84px;
+  box-sizing: content-box;
+  max-height: 100%;
+}
+
+/* Stage clips both items during transition. It keeps a 9:16 portrait
+   ratio but scales down to fit the available viewport height so the
+   top/bottom are never cut off. */
 .shorts-viewer__stage {
-  width: 340px;
-  height: 600px;
+  width: min(340px, calc((100dvh - 3rem) * 0.5625));
+  aspect-ratio: 9 / 16;
+  max-height: calc(100dvh - 3rem);
   border-radius: 14px;
   overflow: hidden;
   position: relative;
   background: #111;
+  flex-shrink: 0;
 }
 
 /* Both items sit absolutely inside the stage */
@@ -137,31 +154,254 @@
   display: block;
 }
 
-.shorts-viewer__info {
+/* Click zone covers the media for single-click pause / double-click like */
+.shorts-viewer__clickzone {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 32px 14px 14px;
-  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  inset: 0;
+  cursor: pointer;
+}
+
+/* Pause indicator shown on single click */
+.shorts-viewer__pause {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  pointer-events: none;
+  animation: pauseFade 0.18s ease;
+}
+.shorts-viewer__pause svg { fill: currentColor; }
+@keyframes pauseFade {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Heart burst shown on double click to like */
+.shorts-viewer__burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #65E66B;
+  pointer-events: none;
+  animation: heartBurst 0.7s cubic-bezier(0.2, 1.2, 0.4, 1) forwards;
+}
+.shorts-viewer__burst svg { fill: currentColor; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
+@keyframes heartBurst {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* ── Green interactive seekbar (pinned to bottom of the video) ── */
+.shorts-seekbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  display: flex;
+  align-items: flex-end;
+  cursor: pointer;
+  z-index: 4;
+}
+.shorts-seekbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.35);
+}
+.shorts-seekbar__fill {
+  position: relative;
+  height: 4px;
+  background: #65E66B;
+  border-radius: 0 2px 2px 0;
+  min-width: 0;
+}
+.shorts-seekbar__thumb {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #65E66B;
+  box-shadow: 0 0 0 3px rgba(101, 230, 107, 0.3);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.shorts-seekbar:hover .shorts-seekbar__thumb { opacity: 1; }
+
+/* ── Bottom meta bar: avatar + title + username ── */
+.shorts-meta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28px 14px 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 3;
   pointer-events: none;
 }
-
-.shorts-viewer__badge {
-  background: rgba(255,255,255,0.2);
+.shorts-meta__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.shorts-meta__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.shorts-meta__title {
   color: #fff;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-  align-self: flex-start;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.shorts-meta__username {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.8125rem;
+  font-weight: 500;
 }
 
-.shorts-viewer__account {
-  color: #fff;
-  font-size: 0.875rem;
+/* ── Right-side action rail ── */
+.shorts-viewer__actions {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-10%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 3;
+}
+.shorts-action {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transition: transform 0.15s, color 0.15s, background 0.15s;
+}
+.shorts-action svg { fill: currentColor; }
+.shorts-action:hover { transform: scale(1.08); }
+.shorts-action--liked { color: #65E66B; }
+.shorts-action--bump { animation: likePop 0.32s cubic-bezier(0.2, 1.4, 0.4, 1); }
+
+@keyframes likePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+/* ── Comment panel ── */
+.shorts-comments {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 340px;
+  max-width: 92vw;
+  height: 55%;
+  background: #fff;
+  border-radius: 14px 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 6;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.35);
+  animation: commentsUp 0.25s ease;
+}
+@keyframes commentsUp {
+  from { transform: translate(-50%, 100%); }
+  to   { transform: translate(-50%, 0); }
+}
+.shorts-comments__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+.shorts-comments__title {
+  font-size: 0.9375rem;
   font-weight: 700;
+  color: #111;
+}
+.shorts-comments__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+}
+.shorts-comments__close:hover { color: #111; }
+.shorts-comments__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+.shorts-comments__empty {
+  color: #888;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+.shorts-comment {
+  display: flex;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+}
+.shorts-comment__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.shorts-comment__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.shorts-comment__user {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #111;
+}
+.shorts-comment__text {
+  font-size: 0.8125rem;
+  color: #333;
 }
 
 /* ── Animations ── */
@@ -208,7 +448,7 @@
 .shorts-viewer__prev,
 .shorts-viewer__next {
   position: fixed;
-  right: 1.5rem;
+  left: 1.5rem;
   background: rgba(255,255,255,0.15);
   border: none;
   color: #fff;
@@ -230,15 +470,38 @@
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .shorts__card { flex: 0 0 128px; height: 188px; }
-  /* Fill the safe-area-padded viewer box rather than the raw viewport,
-     so the top of the media + controls stay fully visible on notched
-     devices. dvh tracks the dynamic viewport (mobile URL bars). */
+  .shorts__card { flex: 0 0 128px; height: 230px; }
+  /* On phones the stage fills the screen and the rail overlays the
+     right edge of the video, so the reserved desktop padding is dropped. */
+  .shorts-viewer {
+    padding: 0;
+  }
+  .shorts-viewer__frame {
+    width: 100%;
+    height: 100%;
+    padding-right: 0;
+  }
   .shorts-viewer__stage {
     width: 100%;
     height: 100%;
     max-width: 100vw;
     max-height: 100dvh;
+    aspect-ratio: auto;
     border-radius: 0;
+  }
+  /* On a full-screen stage the rail overlays the right edge of the video */
+  .shorts-viewer__actions {
+    right: 12px;
+    top: auto;
+    transform: none;
+    bottom: 96px;
+  }
+  .shorts-action {
+    background: rgba(255,255,255,0.92);
+  }
+  .shorts-comments {
+    width: 100%;
+    max-width: 100vw;
+    height: 60%;
   }
 }

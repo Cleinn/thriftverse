@@ -124,7 +124,11 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
       <div className="co-page">
         <Navbar onLoginClick={onLoginClick} user={user} cartCount={0} onCartClick={() => navigate("/cart")} />
         <div className="co-success">
-          <div className="co-success__icon">✓</div>
+          <div className="co-success__icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+              <path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
           <h2>Pesanan Berhasil!</h2>
           <p>Terima kasih sudah belanja di ThriftVerse.<br />Kami akan segera memproses pesananmu.</p>
           <button onClick={() => navigate("/")}>Kembali ke Beranda</button>
@@ -138,7 +142,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
       <div className="co-page">
         <Navbar onLoginClick={onLoginClick} user={user} cartCount={0} onCartClick={() => navigate("/cart")} />
         <div className="co-success">
-          <div className="co-success__icon" style={{ background: "#eee", color: "#999" }}>🛒</div>
+          <div className="co-success__icon" style={{ background: "#eee", color: "#999" }}></div>
           <h2>Cart Kosong</h2>
           <p>Tambahkan produk dulu sebelum checkout.</p>
           <button onClick={() => navigate("/")}>Mulai Belanja</button>
@@ -173,7 +177,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
           {/* Address */}
           <section className="co-card">
             <h3 className="co-card__title">
-              <span className="co-card__icon">📍</span> Alamat Pengiriman
+              Alamat Pengiriman
             </h3>
             <div className="co-form">
               <div className="co-form__row">
@@ -234,7 +238,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
           {/* Items */}
           <section className="co-card">
             <h3 className="co-card__title">
-              <span className="co-card__icon">🛍</span> Produk ({cartItems.length} item)
+              Produk ({cartItems.length} item)
             </h3>
             {cartItems.map((item) => (
               <div key={item.product_id} className="co-item">
@@ -262,7 +266,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
           {/* Shipping */}
           <section className="co-card">
             <h3 className="co-card__title">
-              <span className="co-card__icon">🚚</span> Pilih Pengiriman
+              Pilih Pengiriman
             </h3>
             <div className="co-options">
               {SHIPPING_OPTIONS.map((opt) => (
@@ -290,7 +294,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
           {/* Payment */}
           <section className="co-card">
             <h3 className="co-card__title">
-              <span className="co-card__icon">💳</span> Metode Pembayaran
+              Metode Pembayaran
             </h3>
             <div className="co-pay-grid">
               {PAYMENT_OPTIONS.map((opt) => (
@@ -313,7 +317,7 @@ export default function CheckoutPage({ user, onLoginClick, cartCount, onCartUpda
                         style={{ height: 28, maxWidth: 80, objectFit: "contain" }}
                       />
                     ) : (
-                      <span style={{ fontSize: "1.5rem" }}>💵</span>
+                      <span className="co-pay-card__fallback" />
                     )}
                   </div>
                   <span className="co-pay-card__label">{opt.label}</span>

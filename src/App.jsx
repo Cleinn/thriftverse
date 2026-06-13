@@ -6,6 +6,7 @@ import RegisterPage from "./components/RegisterPage";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import SellerPage from "./pages/SellerPage";
+import PurchasesPage from "./pages/PurchasesPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import ChatPage from "./pages/ChatPage";
@@ -85,6 +86,7 @@ export default function App() {
             user={user}
             onProfileClick={() => navigate("/profile")}
             onSellerClick={() => navigate("/seller")}
+            onPurchasesClick={() => navigate("/purchases")}
             onLogout={async () => { await supabase.auth.signOut(); setUser(null); }}
             onCartClick={() => navigate("/cart")}
             cartCount={cartCount}
@@ -135,6 +137,12 @@ export default function App() {
           <ProtectedRoute user={user}>
             {/* BUGFIX: onBack was never passed, leaving the back button dead */}
             <SellerPage user={user} onBack={() => navigate(-1)} />
+          </ProtectedRoute>
+        } />
+        <Route path="/purchases" element={
+          <ProtectedRoute user={user}>
+            {/* BUYER DASHBOARD: track purchases, shipments, confirm delivery */}
+            <PurchasesPage user={user} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />
       </Routes>

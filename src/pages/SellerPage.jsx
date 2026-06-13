@@ -199,7 +199,7 @@ export default function SellerPage({ user, onBack }) {
       if (insertError) throw insertError;
 
       setProductMsgType("success");
-      setProductMsg("✓ Product listed successfully! It's now visible to all buyers.");
+      setProductMsg("Product listed successfully! It's now visible to all buyers.");
       setProduct({ title: "", price: "", description: "", category: "Men", condition: "Good", location: "", stock: 1 });
       setImageFile(null);
       setImagePreview(null);
@@ -419,6 +419,7 @@ export default function SellerPage({ user, onBack }) {
           {activeTab === "orders" && (
             <SellerOrders
               user={user}
+              view="incoming"
               onOrdersChange={(orders) => {
                 const today = new Date().toDateString();
                 setStats((s) => ({
@@ -434,13 +435,7 @@ export default function SellerPage({ user, onBack }) {
 
           {/* EXPEDITION */}
           {activeTab === "expedition" && (
-            <div className="seller-content">
-              <h1 className="seller-page-title">Track Expedition</h1>
-              <p className="seller-page-sub">Monitor all your ongoing deliveries.</p>
-              <div className="seller-empty-notice">
-                <p>No active shipments right now.</p>
-              </div>
-            </div>
+            <SellerOrders user={user} view="expedition" />
           )}
 
           {/* CHATS */}

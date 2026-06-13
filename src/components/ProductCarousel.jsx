@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { SkeletonProductCard } from "./Skeleton";
@@ -10,10 +10,7 @@ export default function ProductCarousel() {
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category");
-  const scrollRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const query = (searchParams.get("q") || "").trim().toLowerCase();
 
   useEffect(() => {
     fetchProducts()
@@ -23,59 +20,50 @@ export default function ProductCarousel() {
 
   // Filter by the active category from the URL (case-insensitive).
   // "All" / no category shows everything.
-  const visibleProducts =
+  let visibleProducts =
     category && category !== "All"
       ? products.filter(
-          (p) =>
-            (p.category || "").toLowerCase() === category.toLowerCase()
+          (p) => (p.category || "").toLowerCase() === category.toLowerCase()
         )
       : products;
 
-  function handleMouseDown(e) {
-    setIsDragging(true);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeft(scrollRef.current.scrollLeft);
-  }
-
-  function handleMouseMove(e) {
-    if (!isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    scrollRef.current.scrollLeft = scrollLeft - (x - startX) * 1.5;
-  }
-
-  function handleMouseUp() {
-    setIsDragging(false);
+  // Search strictly filters products by title and description.
+  if (query) {
+    visibleProducts = visibleProducts.filter((p) => {
+      const title = (p.title || p.name || "").toLowerCase();
+      const desc = (p.description || "").toLowerCase();
+      return title.includes(query) || desc.includes(query);
+    });
   }
 
   return (
-    <section className="carousel">
+    <section className="carousel" id="catalogue">
       <h2 className="carousel__title">
-        {category && category !== "All" ? `${category}'s Picks` : "Recommended For You"}
+        {query
+          ? `Hasil pencarian "${query}"`
+          : category && category !== "All"
+          ? `${category}'s Picks`
+          : "Recommended For You"}
       </h2>
-      <div className="carousel__wrapper">
-        <div
-          ref={scrollRef}
-          className="carousel__track"
-          style={{ cursor: isDragging ? "grabbing" : "grab" }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonProductCard key={i} />
-            ))
-          ) : visibleProducts.length === 0 ? (
-            <p className="carousel__empty">Belum ada produk di kategori ini.</p>
-          ) : (
-            visibleProducts.map((product) => (
-              <ProductCard key={product.product_id} product={product} />
-            ))
-          )}
+      {loading ? (
+        <div className="carousel__grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonProductCard key={i} />
+          ))}
         </div>
-      </div>
+      ) : visibleProducts.length === 0 ? (
+        <p className="carousel__empty">
+          {query
+            ? "Tidak ada produk yang cocok dengan pencarian."
+            : "Belum ada produk di kategori ini."}
+        </p>
+      ) : (
+        <div className="carousel__grid">
+          {visibleProducts.map((product) => (
+            <ProductCard key={product.product_id} product={product} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

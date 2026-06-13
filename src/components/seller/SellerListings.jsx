@@ -111,7 +111,7 @@ export default function SellerListings({ user }) {
         </div>
       ) : visible.length === 0 ? (
         <div className="seller-empty-notice">
-          <span className="seller-empty-icon">🛍️</span>
+          
           <p>
             {filter === "all"
               ? "Belum ada produk. Upload produk pertamamu di tab Upload Product."
