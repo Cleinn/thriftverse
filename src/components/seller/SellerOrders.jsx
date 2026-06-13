@@ -69,17 +69,6 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
     }
   }
 
-  // Mark a shipped order as completed (delivered).
-  async function handleComplete(order) {
-    setOrders((prev) => {
-      const next = prev.map((o) => (o.id === order.id ? { ...o, status: "selesai" } : o));
-      onOrdersChange?.(next);
-      return next;
-    });
-    const { error } = await updateOrderStatus(order.id, "selesai");
-    if (error) alert("Gagal memperbarui status: " + error.message);
-  }
-
   const incomingStatuses = ["pending", "diproses"];
   const expeditionStatuses = ["dikirim", "selesai"];
   const statuses = view === "expedition" ? expeditionStatuses : incomingStatuses;
@@ -192,15 +181,9 @@ export default function SellerOrders({ user, onOrdersChange, view = "incoming" }
                   </button>
                 )}
 
-                {/* Expedition: allow marking delivered */}
-                {isExpedition && order.status === "dikirim" && (
-                  <button
-                    className="seller-btn seller-ship-btn"
-                    onClick={() => handleComplete(order)}
-                  >
-                    Selesai
-                  </button>
-                )}
+                {/* Expedition is read-only for the seller. Only the buyer
+                    can confirm receipt and finalize the order, so the
+                    seller just sees the shipping status here. */}
               </div>
             </div>
           ))}

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { fetchSellerProfile } from "../lib/profiles";
-import { sendChatMessage, subscribeToMessages, subscribeToNewConversations, updateBarterStatus } from "../lib/chat";
+import { sendChatMessage, subscribeToMessages, subscribeToNewConversations, updateBarterStatus, acceptBarterOffer } from "../lib/chat";
 import Navbar from "../components/Navbar";
 import BarterCard from "../components/BarterCard";
 import { Skeleton } from "../components/Skeleton";
@@ -157,7 +157,14 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   // Seller accepts / rejects a barter offer from inside the chat.
   async function handleBarterDecision(msg, status) {
     setBarterBusy(msg.id);
-    const { data, error } = await updateBarterStatus({ messageId: msg.id, status });
+    let error;
+    if (status === "accepted") {
+      // Accepting generates the two exchange orders (seller ships their
+      // product, buyer ships their offered product to the seller).
+      ({ error } = await acceptBarterOffer({ message: msg, conversation: activeConv }));
+    } else {
+      ({ error } = await updateBarterStatus({ messageId: msg.id, status }));
+    }
     setBarterBusy(null);
     if (error) {
       alert("Gagal memperbarui barter: " + error.message);
@@ -165,7 +172,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     }
     // Optimistic local update (realtime UPDATE will also sync the buyer side)
     setMessages((prev) =>
-      prev.map((m) => (m.id === msg.id ? { ...m, ...(data || { barter_status: status }) } : m))
+      prev.map((m) => (m.id === msg.id ? { ...m, barter_status: status } : m))
     );
   }
 

@@ -116,6 +116,83 @@ export async function updateBarterStatus({ messageId, status }) {
 }
 
 /**
+ * TWO-WAY BARTER FULFILLMENT.
+ * When a seller accepts a barter offer, the swap requires two shipments,
+ * so we generate two separate orders in the transactions table:
+ *
+ *   Order A: the SELLER's product goes to the BUYER.
+ *            (seller_id = conversation seller, buyer_id = conversation buyer)
+ *            -> shows up in the seller's Incoming Orders to ship.
+ *
+ *   Order B: the BUYER's offered product goes to the original SELLER.
+ *            Here the buyer acts as the seller of their own item:
+ *            (seller_id = conversation buyer, buyer_id = conversation seller)
+ *            -> shows up in the buyer's Incoming Orders to ship.
+ *
+ * Both rows are tagged as barter orders so the counterpart shipment can
+ * be traced. Returns { error } - null on success.
+ */
+export async function acceptBarterOffer({ message, conversation }) {
+  if (!message || !conversation) {
+    return { error: new Error("Missing barter context") };
+  }
+
+  // 1) Flip the offer to accepted (seller-only per RLS).
+  const { error: statusError } = await supabase
+    .from("messages")
+    .update({ barter_status: "accepted" })
+    .eq("id", message.id);
+  if (statusError) return { error: statusError };
+
+  const sellerId = conversation.seller_id;
+  const buyerId = conversation.buyer_id;
+  const offeredPrice = Number(message.barter_product_price) || 0;
+  const sellerProductPrice = Number(conversation.product_price) || 0;
+
+  const rows = [
+    // Order A: seller's product -> buyer (seller ships)
+    {
+      buyer_id: buyerId,
+      seller_id: sellerId,
+      product_id: conversation.product_id,
+      product_title: conversation.product_title,
+      product_image: conversation.product_image,
+      quantity: 1,
+      price: sellerProductPrice,
+      total: sellerProductPrice,
+      shipping_method: "Barter Exchange",
+      payment_method: "Barter",
+      shipping_address: null,
+      note: "Barter: produk penjual untuk pembeli",
+      status: "pending",
+      is_barter: true,
+      barter_message_id: message.id,
+    },
+    // Order B: buyer's offered product -> original seller (buyer ships)
+    {
+      buyer_id: sellerId,
+      seller_id: buyerId,
+      product_id: message.barter_product_id,
+      product_title: message.barter_product_title,
+      product_image: message.barter_product_image,
+      quantity: 1,
+      price: offeredPrice,
+      total: offeredPrice,
+      shipping_method: "Barter Exchange",
+      payment_method: "Barter",
+      shipping_address: null,
+      note: "Barter: produk pembeli untuk penjual",
+      status: "pending",
+      is_barter: true,
+      barter_message_id: message.id,
+    },
+  ];
+
+  const { error: orderError } = await supabase.from("transactions").insert(rows);
+  return { error: orderError };
+}
+
+/**
  * Subscribe realtime ke pesan-pesan baru dalam satu conversation.
  * Returns fungsi unsubscribe.
  */

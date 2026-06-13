@@ -5,6 +5,7 @@ import {
   subscribeToMessages,
   subscribeToNewConversations,
   updateBarterStatus,
+  acceptBarterOffer,
 } from "../../lib/chat";
 import BarterCard from "../BarterCard";
 import { Skeleton } from "../Skeleton";
@@ -99,14 +100,21 @@ export default function SellerChats({ user }) {
   // Seller accepts / rejects a barter offer.
   async function handleBarterDecision(msg, status) {
     setBarterBusy(msg.id);
-    const { data, error } = await updateBarterStatus({ messageId: msg.id, status });
+    let error;
+    if (status === "accepted") {
+      // Accepting a barter both flips the offer and generates the two
+      // exchange orders (seller ships their product, buyer ships theirs).
+      ({ error } = await acceptBarterOffer({ message: msg, conversation: activeConv }));
+    } else {
+      ({ error } = await updateBarterStatus({ messageId: msg.id, status }));
+    }
     setBarterBusy(null);
     if (error) {
       alert("Gagal memperbarui barter: " + error.message);
       return;
     }
     setMsgs((prev) =>
-      prev.map((m) => (m.id === msg.id ? { ...m, ...(data || { barter_status: status }) } : m))
+      prev.map((m) => (m.id === msg.id ? { ...m, barter_status: status } : m))
     );
   }
 
