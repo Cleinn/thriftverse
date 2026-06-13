@@ -240,10 +240,10 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 - **Register & Login**
 
 <p align="center">
-  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Demo%20Register.gif" width="700" alt="Demo Register & Login">
+  <img src="src/assets/Demo Register.gif" width="700" alt="Demo Register & Login">
 </p>
 <p align="center">
-  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Demo%20Login.gif" width="700" alt="Demo Register & Login">
+  <img src="src/assets/Demo Login.gif" width="700" alt="Demo Register & Login">
 </p>
 
 
@@ -256,7 +256,7 @@ The fast fashion industry generates millions of tons of waste annually as clothi
 - **Barter a Product**
 
 <p align="center">
-  <img src="https://ik.imagekit.io/nauvalihsan/Thriftverse%20Assets/Demo%20Barter%20Flow.gif" width="700" alt="Demo Barter Flow">
+  <img src="src/assets/Demo Barter Flow.gif" width="700" alt="Demo Barter Flow">
 </p>
 
 - **Seller Upload & Manage Product**
