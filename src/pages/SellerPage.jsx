@@ -25,10 +25,7 @@ export default function SellerPage({ user, onBack }) {
   const handleBack = onBack || (() => navigate(-1));
   const [activeTab, setActiveTab] = useState("overview");
 
-  // ---------- ONBOARDING GATE ----------
-  // The dashboard stays LOCKED until profiles.shop_name exists.
-  // First-time sellers are redirected to the mandatory Shop Setup page.
-  const [gate, setGate] = useState("checking"); // checking | ready
+  const [gate, setGate] = useState("checking");
   useEffect(() => {
     if (!user) return;
     let cancelled = false;

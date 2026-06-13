@@ -1,26 +1,14 @@
-/* ============================================================
-   Seller onboarding — DARK THEME
-   Matches the Seller Center palette:
-     #020617 page bg · #0b1220 card · #65E66B accent
-     #8ca0b8 muted text · #1a2c42 borders
-   ============================================================ */
-
 .shop-setup-overlay {
   position: fixed;
   inset: 0;
   background: #020617;
   z-index: 200;
   display: flex;
-  /* CROP FIX: flex-start (not center) keeps the TOP of a tall card
-     reachable when it overflows — centering + overflow clips the top
-     and scroll can't reach it. `margin:auto` on the card re-centers it
-     vertically only when it fits. */
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* CROP FIX: account for fixed headers / mobile notches via safe-area
-     insets so the first line is never tucked under a bar or the notch. */
+
   padding:
     calc(2.5rem + env(safe-area-inset-top, 0px))
     calc(1rem + env(safe-area-inset-right, 0px))
@@ -38,7 +26,6 @@
   max-width: 33rem;
   padding: 2rem 2.25rem 1.75rem;
   box-sizing: border-box;
-  /* re-center vertically only when there's room to spare */
   margin: auto;
   animation: tvFadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -96,7 +83,6 @@
   margin: 0 0 1.25rem;
 }
 
-/* the inner form reuses .seller-form but should sit flat & dark in the card */
 .shop-setup-form {
   background: transparent;
   box-shadow: none;
@@ -104,8 +90,6 @@
   border-radius: 0;
 }
 
-/* ---- DARK-THEME field overrides (scoped to this page only, so the
-        light Seller Center forms elsewhere are untouched) ---- */
 .shop-setup-card .seller-label {
   color: #c7d2e0;
 }
