@@ -45,19 +45,6 @@
   display: block;
 }
 
-
-.shorts__card video.shorts__thumbnail::-webkit-media-controls,
-.shorts__card video.shorts__thumbnail::-webkit-media-controls-enclosure,
-.shorts__card video.shorts__thumbnail::-webkit-media-controls-panel,
-.shorts__card video.shorts__thumbnail::-webkit-media-controls-overlay-play-button,
-.shorts__card video.shorts__thumbnail::-webkit-media-controls-start-playback-button {
-  display: none !important;
-  -webkit-appearance: none;
-}
-.shorts__card video.shorts__thumbnail {
-  pointer-events: none;
-}
-
 .shorts__badge {
   position: absolute;
   top: 8px; left: 8px;

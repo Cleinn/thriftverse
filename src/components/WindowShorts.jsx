@@ -39,54 +39,9 @@ export default function WindowShorts({ user }) {
 }
 
 function ShortsCard({ item, onOpen }) {
-  const cardRef = useRef(null);
-  const videoRef = useRef(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    if (item.type !== "video") return;
-    const el = cardRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio >= 0.6),
-      { threshold: [0, 0.6, 1] }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [item.type]);
-
-  useEffect(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-    if (inView) {
-      const p = vid.play();
-      if (p && typeof p.catch === "function") p.catch(() => {});
-    } else {
-      vid.pause();
-    }
-  }, [inView]);
-
   return (
-    <button ref={cardRef} className="shorts__card" onClick={onOpen}>
-      {item.type === "video" ? (
-        <video
-          ref={videoRef}
-          className="shorts__thumbnail"
-          src={item.src}
-          poster={item.thumbnail}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          disablePictureInPicture
-          disableRemotePlayback
-          controls={false}
-          controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
-          tabIndex={-1}
-        />
-      ) : (
-        <img src={item.thumbnail} alt={item.account} className="shorts__thumbnail" />
-      )}
+    <button className="shorts__card" onClick={onOpen}>
+      <img src={item.thumbnail} alt={item.account} className="shorts__thumbnail" />
       <span className="shorts__badge">{item.label}</span>
       <div className="shorts__overlay">
         <span className="shorts__account">{item.account}</span>
