@@ -17,6 +17,9 @@
   gap: 1.25rem;
 }
 
+.carousel__grid > * {
+  min-width: 0;
+}
 .carousel__empty {
   color: #888;
   font-size: 0.8125rem;
