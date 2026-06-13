@@ -15,12 +15,11 @@ export default function RegisterPage({ onClose, onSwitchToLogin }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState(""); // "success" | "error"
+  const [messageType, setMessageType] = useState("");
 
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error on change
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -95,7 +94,6 @@ export default function RegisterPage({ onClose, onSwitchToLogin }) {
         confirmPassword: "",
       });
 
-      // Switch to login after a short delay
       setTimeout(() => {
         if (onSwitchToLogin) onSwitchToLogin();
       }, 2500);
@@ -185,7 +183,7 @@ export default function RegisterPage({ onClose, onSwitchToLogin }) {
                 )}
                 </div>
 
-                {/* Confirm Password */}
+                {}
                 <div className="form-group">
                 <label className="form-label">Confirm Password</label>
                 <input

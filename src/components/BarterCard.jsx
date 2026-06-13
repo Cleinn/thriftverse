@@ -1,22 +1,11 @@
 import "./BarterCard.css";
 
-/**
- * Small Product Card rendered inside a chat bubble for a barter offer.
- *
- * Props:
- * - msg        : the barter message row (carries barter_* fields + barter_status)
- * - isSeller   : true when the current viewer is the seller of the conversation
- *                (only the seller sees the Accept / Reject actions)
- * - onAccept   : () => void  — called when seller taps Accept
- * - onReject   : () => void  — called when seller taps Reject
- * - busy       : disables the action buttons while a status update is in flight
- */
 export default function BarterCard({ msg, isSeller, onAccept, onReject, busy }) {
   const status = msg.barter_status || "pending";
 
   return (
     <div className="barter-card">
-      <span className="barter-card__tag">🔁 Penawaran Barter</span>
+      <span className="barter-card__tag">Penawaran Barter</span>
 
       <div className="barter-card__body">
         <img
@@ -63,7 +52,7 @@ export default function BarterCard({ msg, isSeller, onAccept, onReject, busy }) 
         <span
           className={`barter-card__status barter-card__status--${status}`}
         >
-          {status === "accepted" ? "✓ Barter diterima" : "✕ Barter ditolak"}
+          {status === "accepted" ? "Barter diterima" : "Barter ditolak"}
         </span>
       )}
     </div>

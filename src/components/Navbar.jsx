@@ -4,9 +4,7 @@ import { supabase } from "../lib/supabase";
 import "./Navbar.css";
 import cart from "../assets/gridicons_cart.svg"
 
-// Primary text links shown in the secondary bar (match reference layout)
 const NAV_LINKS = ["Home", "ThriftVid", "Catalogue", "Trade"];
-// Product categories surfaced inside the hamburger dropdown
 const CATEGORY_ITEMS = ["All", "Women", "Men", "Kids"];
 
 export default function Navbar({
@@ -23,23 +21,14 @@ export default function Navbar({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  // The active category is driven by the URL (?category=...), defaulting
-  // to "All". This keeps the navbar tabs and the product feed in sync.
   const activeNav = searchParams.get("category") || "All";
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // Which primary nav link is currently active (highlighted).
   const [activeLink, setActiveLink] = useState("Home");
   const dropdownRef = useRef(null);
   const menuRef = useRef(null);
 
-  // ---- Self-healing routing -------------------------------------------
-  // The navbar must respond on EVERY page (e.g. Item Detail Page), even
-  // when a parent page forgets to wire a handler. Each action therefore
-  // falls back to direct router navigation.
-  // AUTH GATE: the cart requires a logged-in user. When unauthenticated,
-  // prompt login instead of opening the cart.
   const handleCartClick = () => {
     if (!user) {
       if (onLoginClick) onLoginClick();
@@ -60,8 +49,6 @@ export default function Navbar({
     });
 
   function handleNavItem(item) {
-    // Category tabs always lead back to the marketplace feed, carrying
-    // the selected category in the URL so the product list can filter.
     setMenuOpen(false);
     if (location.pathname !== "/") {
       navigate(item === "All" ? "/" : `/?category=${encodeURIComponent(item)}`);
@@ -79,7 +66,6 @@ export default function Navbar({
   function handleNavLink(link) {
     setMenuOpen(false);
     setActiveLink(link);
-    // Map each primary link to a section anchor on the home feed.
     const anchors = {
       Home: "home",
       ThriftVid: "thriftvid",
@@ -98,7 +84,6 @@ export default function Navbar({
     }
 
     if (location.pathname !== "/") {
-      // Navigate home first, then scroll once the home feed has mounted.
       navigate("/");
       setTimeout(scrollToTarget, 120);
     } else {
@@ -107,9 +92,6 @@ export default function Navbar({
   }
 
   function handleSearch() {
-    // Search strictly filters the product feed. The query is carried in the
-    // URL (?q=...) so the product list can read and filter against it, the
-    // same decoupled pattern used for category filtering.
     const term = search.trim();
     if (location.pathname !== "/") {
       navigate(term ? `/?q=${encodeURIComponent(term)}` : "/");
@@ -140,9 +122,6 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Highlight the active nav link. Off the home feed nothing is in view,
-  // so the route alone decides; on the home feed an IntersectionObserver
-  // tracks which section is currently on screen and updates the highlight.
   useEffect(() => {
     if (location.pathname !== "/") {
       setActiveLink(null);
@@ -185,7 +164,7 @@ export default function Navbar({
         </span>
         <div className="navbar__auth">
 
-          {/* Cart button dengan badge */}
+          {}
           <button className="navbar-cart" onClick={handleCartClick} id="navbar-cart-btn">
             <img className="cart-icon" src={cart} alt="cart" id="cart-icon-img" />
             {cartCount > 0 && (
@@ -241,7 +220,7 @@ export default function Navbar({
 
       <div className="navbar__secondary">
         <div className="navbar__secondary-left">
-          {/* Hamburger button opens the category dropdown */}
+          {}
           <div className="navbar__menu" ref={menuRef}>
             <button
               className="navbar__hamburger"
@@ -296,7 +275,7 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* Flying item animation target */}
+      {}
       <div id="cart-fly-target" style={{
         position: "fixed",
         top: 0, left: 0,

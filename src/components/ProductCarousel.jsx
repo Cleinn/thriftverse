@@ -18,8 +18,6 @@ export default function ProductCarousel() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Filter by the active category from the URL (case-insensitive).
-  // "All" / no category shows everything.
   let visibleProducts =
     category && category !== "All"
       ? products.filter(
@@ -27,7 +25,6 @@ export default function ProductCarousel() {
         )
       : products;
 
-  // Search strictly filters products by title and description.
   if (query) {
     visibleProducts = visibleProducts.filter((p) => {
       const title = (p.title || p.name || "").toLowerCase();

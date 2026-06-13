@@ -1,21 +1,14 @@
 import { supabase } from "../lib/supabase";
 import { fetchSellerProfile } from "./profiles";
 
-/**
- * Buka atau buat conversation antara buyer dan seller untuk suatu produk.
- * - seller_name disimpan sebagai SHOP NAME (nama toko) dari tabel profiles,
- *   fallback ke username bila shop_name belum diisi.
- * Returns conversation id (string) atau null kalau gagal.
- */
 export async function openOrCreateConversation({
   productId,
   productTitle,
   productImage,
   buyerId,
   sellerId,
-  sellerName, // optional: shop name kalau sudah diketahui dari halaman produk
+  sellerName,
 }) {
-  // Cek apakah sudah ada
   const { data: existing } = await supabase
     .from("conversations")
     .select("id, seller_name")
@@ -24,12 +17,10 @@ export async function openOrCreateConversation({
     .eq("seller_id", sellerId)
     .maybeSingle();
 
-  // Resolve nama toko dari profiles bila perlu
   const resolvedSellerName =
     sellerName || (await fetchSellerProfile(sellerId)).displayName;
 
   if (existing) {
-    // Self-heal: conversation lama mungkin masih menyimpan username
     if (resolvedSellerName && existing.seller_name !== resolvedSellerName) {
       await supabase
         .from("conversations")
@@ -39,8 +30,6 @@ export async function openOrCreateConversation({
     return existing.id;
   }
 
-  // Buat baru — pesan buyer otomatis ter-route ke inbox Seller Center
-  // milik seller yang benar karena terikat ke seller_id ini.
   const { data, error } = await supabase
     .from("conversations")
     .insert({
@@ -62,10 +51,6 @@ export async function openOrCreateConversation({
   return data.id;
 }
 
-/**
- * Kirim pesan ke sebuah conversation. Realtime INSERT event dari
- * Supabase akan otomatis mendorong pesan ini ke kedua sisi.
- */
 export async function sendChatMessage({ conversationId, senderId, text }) {
   const message_text = text.trim();
   if (!message_text) return { error: null };
@@ -76,13 +61,6 @@ export async function sendChatMessage({ conversationId, senderId, text }) {
   });
 }
 
-/**
- * Kirim sebuah BARTER OFFER ke conversation. Tersimpan sebagai message
- * khusus (message_type = 'barter') yang membawa data produk yang
- * ditawarkan buyer, sehingga bisa dirender sebagai Small Product Card
- * di chat room. Realtime INSERT event akan otomatis mendorongnya ke
- * kedua sisi seperti pesan biasa.
- */
 export async function sendBarterOffer({ conversationId, senderId, offeredProduct }) {
   if (!conversationId || !offeredProduct) return { error: new Error("Missing barter data") };
   return supabase.from("messages").insert({
@@ -98,11 +76,6 @@ export async function sendBarterOffer({ conversationId, senderId, offeredProduct
   });
 }
 
-/**
- * Update status sebuah barter offer (dipakai seller via tombol
- * Accept / Reject). Hanya seller di conversation terkait yang
- * diizinkan menurut RLS.
- */
 export async function updateBarterStatus({ messageId, status }) {
   if (!messageId || !["accepted", "rejected"].includes(status)) {
     return { error: new Error("Invalid barter status update") };
@@ -115,29 +88,11 @@ export async function updateBarterStatus({ messageId, status }) {
     .single();
 }
 
-/**
- * TWO-WAY BARTER FULFILLMENT.
- * When a seller accepts a barter offer, the swap requires two shipments,
- * so we generate two separate orders in the transactions table:
- *
- *   Order A: the SELLER's product goes to the BUYER.
- *            (seller_id = conversation seller, buyer_id = conversation buyer)
- *            -> shows up in the seller's Incoming Orders to ship.
- *
- *   Order B: the BUYER's offered product goes to the original SELLER.
- *            Here the buyer acts as the seller of their own item:
- *            (seller_id = conversation buyer, buyer_id = conversation seller)
- *            -> shows up in the buyer's Incoming Orders to ship.
- *
- * Both rows are tagged as barter orders so the counterpart shipment can
- * be traced. Returns { error } - null on success.
- */
 export async function acceptBarterOffer({ message, conversation }) {
   if (!message || !conversation) {
     return { error: new Error("Missing barter context") };
   }
 
-  // 1) Flip the offer to accepted (seller-only per RLS).
   const { error: statusError } = await supabase
     .from("messages")
     .update({ barter_status: "accepted" })
@@ -150,7 +105,6 @@ export async function acceptBarterOffer({ message, conversation }) {
   const sellerProductPrice = Number(conversation.product_price) || 0;
 
   const rows = [
-    // Order A: seller's product -> buyer (seller ships)
     {
       buyer_id: buyerId,
       seller_id: sellerId,
@@ -168,7 +122,6 @@ export async function acceptBarterOffer({ message, conversation }) {
       is_barter: true,
       barter_message_id: message.id,
     },
-    // Order B: buyer's offered product -> original seller (buyer ships)
     {
       buyer_id: sellerId,
       seller_id: buyerId,
@@ -192,10 +145,6 @@ export async function acceptBarterOffer({ message, conversation }) {
   return { error: orderError };
 }
 
-/**
- * Subscribe realtime ke pesan-pesan baru dalam satu conversation.
- * Returns fungsi unsubscribe.
- */
 export function subscribeToMessages(conversationId, onInsert, onUpdate) {
   const channel = supabase
     .channel("messages:" + conversationId)
@@ -224,10 +173,6 @@ export function subscribeToMessages(conversationId, onInsert, onUpdate) {
   return () => supabase.removeChannel(channel);
 }
 
-/**
- * Subscribe realtime ke conversation BARU yang melibatkan user ini
- * (sebagai buyer atau seller) supaya inbox ter-update tanpa refresh.
- */
 export function subscribeToNewConversations(userId, onInsert) {
   const channel = supabase
     .channel("conversations:" + userId)

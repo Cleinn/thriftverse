@@ -15,7 +15,6 @@ const BUYER_TABS = [
   { id: "expedition", label: "Track Expedition" },
 ];
 
-// Shipping progress steps shown in the tracker.
 const TRACK_STEPS = ["pending", "diproses", "dikirim", "selesai"];
 const TRACK_LABELS = {
   pending: "Dipesan",
@@ -42,8 +41,6 @@ export default function PurchasesPage({ user, onBack }) {
       setLoading(false);
     });
 
-    // REALTIME: new orders appear, and seller status changes (e.g. the
-    // moment a seller clicks "Ship Product") are reflected instantly.
     const unsubscribe = subscribeToBuyerOrders(user.id, {
       onInsert: (order) => {
         setOrders((prev) =>
@@ -58,10 +55,8 @@ export default function PurchasesPage({ user, onBack }) {
     return () => { cancelled = true; unsubscribe(); };
   }, [user]);
 
-  // Buyer confirms delivery: finalize to "selesai" so it leaves tracking.
   async function handleConfirm(order) {
     setConfirmingId(order.id);
-    // optimistic update
     setOrders((prev) =>
       prev.map((o) => (o.id === order.id ? { ...o, status: "selesai" } : o))
     );
@@ -87,7 +82,6 @@ export default function PurchasesPage({ user, onBack }) {
     return i < 0 ? 0 : i;
   }
 
-  // Active = anything still in flight (not yet completed).
   const activeOrders = orders.filter((o) => o.status !== "selesai");
   const totalSpent = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
 
@@ -141,8 +135,7 @@ export default function PurchasesPage({ user, onBack }) {
             {ORDER_STATUS_LABELS[order.status] || order.status}
           </span>
 
-          {/* Confirm Order Received only appears once the item is shipped,
-              i.e. in the final stage before completion. */}
+          {}
           {showConfirm && order.status === "dikirim" && (
             <button
               className="seller-btn seller-btn--primary seller-ship-btn"
@@ -183,7 +176,7 @@ export default function PurchasesPage({ user, onBack }) {
 
         <main className="seller-main">
 
-          {/* OVERVIEW */}
+          {}
           {activeTab === "overview" && (
             <div className="seller-content">
               <h1 className="seller-page-title">My Purchases</h1>
@@ -213,7 +206,7 @@ export default function PurchasesPage({ user, onBack }) {
             </div>
           )}
 
-          {/* MY PURCHASES — every product the buyer has bought */}
+          {}
           {activeTab === "purchases" && (
             <div className="seller-content">
               <h1 className="seller-page-title">My Purchases</h1>
@@ -248,7 +241,7 @@ export default function PurchasesPage({ user, onBack }) {
             </div>
           )}
 
-          {/* TRACK EXPEDITION — active shipments, synced with seller actions */}
+          {}
           {activeTab === "expedition" && (
             <div className="seller-content">
               <h1 className="seller-page-title">Track Expedition</h1>

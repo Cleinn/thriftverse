@@ -102,7 +102,7 @@
   gap: 1.25rem;
 }
 
-/* Hamburger button + category dropdown */
+
 .navbar__menu {
   position: relative;
   display: flex;
@@ -418,7 +418,7 @@
   }
 }
 
-/* Cart badge */
+
 .navbar-cart {
   position: relative;
 }
@@ -439,7 +439,7 @@
   justify-content: center;
 }
 
-/* Flying item animation */
+
 @keyframes flyToCart {
   0% {
     transform: scale(1);

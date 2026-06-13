@@ -1,7 +1,4 @@
-/* ============================================================
-   BARTER CARD — small product card shown inside a chat bubble
-   when a buyer proposes a barter. Seller side gets Accept/Reject.
-   ============================================================ */
+
 .barter-card {
   width: 15rem;
   max-width: 100%;

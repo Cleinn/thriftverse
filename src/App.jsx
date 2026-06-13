@@ -129,19 +129,19 @@ export default function App() {
         } />
         <Route path="/seller/setup" element={
           <ProtectedRoute user={user}>
-            {/* SELLER ONBOARDING: mandatory shop setup before dashboard */}
+            {}
             <ShopSetupPage user={user} />
           </ProtectedRoute>
         } />
         <Route path="/seller" element={
           <ProtectedRoute user={user}>
-            {/* BUGFIX: onBack was never passed, leaving the back button dead */}
+            {}
             <SellerPage user={user} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />
         <Route path="/purchases" element={
           <ProtectedRoute user={user}>
-            {/* BUYER DASHBOARD: track purchases, shipments, confirm delivery */}
+            {}
             <PurchasesPage user={user} onBack={() => navigate(-1)} />
           </ProtectedRoute>
         } />

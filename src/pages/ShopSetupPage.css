@@ -4,6 +4,7 @@
   background: #020617;
   z-index: 200;
   display: flex;
+
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
@@ -26,6 +27,7 @@
   max-width: 33rem;
   padding: 2rem 2.25rem 1.75rem;
   box-sizing: border-box;
+
   margin: auto;
   animation: tvFadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

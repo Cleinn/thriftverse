@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabase'
 
 export async function fetchProducts() {
-  // Fetch products and join with profiles to get seller username
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -14,7 +13,6 @@ export async function fetchProducts() {
     .eq('status', 'available')
 
   if (error) {
-    // Fallback: try vw_product_details view if direct join fails
     const { data: viewData, error: viewError } = await supabase
       .from('vw_product_details')
       .select('*')
@@ -27,7 +25,6 @@ export async function fetchProducts() {
     return viewData
   }
 
-  // Normalize: flatten profiles.username → seller_username
   return (data || []).map((p) => ({
     ...p,
     product_id: p.id,
@@ -37,11 +34,6 @@ export async function fetchProducts() {
   }))
 }
 
-/**
- * Fetch the current user's OWN active listings — used to populate the
- * barter picker so a buyer can pick one of their items to offer in
- * exchange. Active = status 'available', not sold, stock > 0.
- */
 export async function fetchMyActiveListings(userId) {
   if (!userId) return []
   const { data, error } = await supabase

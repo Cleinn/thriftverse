@@ -180,7 +180,7 @@ async function handleSaveName(e) {
       if (uploadErr) throw uploadErr;
 
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      const avatarUrlWithBust = `${data.publicUrl}?t=${Date.now()}`; // 👈
+      const avatarUrlWithBust = `${data.publicUrl}?t=${Date.now()}`;
 
       const { error: updateErr } = await supabase.auth.updateUser({
         data: { avatar_url: avatarUrlWithBust },

@@ -8,13 +8,6 @@ const FILTERS = [
   { id: "inactive", label: "Inactive / Draft" },
 ];
 
-/**
- * My Listings — manage every product this seller has uploaded.
- * Active   = status 'available' and not sold  → visible to buyers
- * Inactive = status 'inactive' OR sold/out of stock → hidden from buyers
- * (Buyer feeds query .eq('status','available'), so toggling status
- *  immediately shows/hides the product on the marketplace.)
- */
 export default function SellerListings({ user }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);

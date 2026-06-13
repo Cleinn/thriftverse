@@ -10,11 +10,6 @@ import {
 import BarterCard from "../BarterCard";
 import { Skeleton } from "../Skeleton";
 
-/**
- * Buyer Chats — Seller Center inbox.
- * Conversations are routed here via `conversations.seller_id`, so a
- * seller only ever sees chats addressed to their own shop.
- */
 export default function SellerChats({ user }) {
   const [convs, setConvs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,10 +17,9 @@ export default function SellerChats({ user }) {
   const [msgs, setMsgs] = useState([]);
   const [input, setInput] = useState("");
   const [buyerNames, setBuyerNames] = useState({});
-  const [barterBusy, setBarterBusy] = useState(null); // message id being updated
+  const [barterBusy, setBarterBusy] = useState(null);
   const endRef = useRef(null);
 
-  // Load inbox + realtime new conversations
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -48,8 +42,6 @@ export default function SellerChats({ user }) {
             .select("username, full_name")
             .eq("id", conv.buyer_id)
             .maybeSingle();
-          // Show the buyer's ACTUAL username. Fall back to full_name only
-          // if username is missing, then to a generic label as last resort.
           names[conv.id] = profile?.username || profile?.full_name || "Pembeli";
         })
       );
@@ -64,7 +56,6 @@ export default function SellerChats({ user }) {
     return () => { cancelled = true; unsubscribe(); };
   }, [user]);
 
-  // Messages + realtime for the open thread
   useEffect(() => {
     if (!activeConv) return;
     supabase
@@ -97,13 +88,10 @@ export default function SellerChats({ user }) {
     await sendChatMessage({ conversationId: activeConv.id, senderId: user.id, text });
   }
 
-  // Seller accepts / rejects a barter offer.
   async function handleBarterDecision(msg, status) {
     setBarterBusy(msg.id);
     let error;
     if (status === "accepted") {
-      // Accepting a barter both flips the offer and generates the two
-      // exchange orders (seller ships their product, buyer ships theirs).
       ({ error } = await acceptBarterOffer({ message: msg, conversation: activeConv }));
     } else {
       ({ error } = await updateBarterStatus({ messageId: msg.id, status }));
@@ -120,7 +108,7 @@ export default function SellerChats({ user }) {
 
   return (
     <div className="seller-content seller-chat-layout">
-      {/* LEFT: conversation list */}
+      {}
       <div className="seller-chat-sidebar">
         <h2 className="seller-chat-sidebar-title">Conversations</h2>
         <div className="seller-chat-sidebar-list">
@@ -136,7 +124,6 @@ export default function SellerChats({ user }) {
             ))
           ) : convs.length === 0 ? (
             <div className="seller-chat-empty">
-              <span>💬</span>
               <p>No chats yet</p>
             </div>
           ) : (
@@ -165,11 +152,10 @@ export default function SellerChats({ user }) {
         </div>
       </div>
 
-      {/* RIGHT: thread */}
+      {}
       <div className={`seller-chat-main ${activeConv ? "seller-chat-main--open" : ""}`}>
         {!activeConv ? (
           <div className="seller-chat-placeholder">
-            <span className="seller-chat-placeholder-icon">💬</span>
             <p>Select a conversation to start chatting with buyers.</p>
           </div>
         ) : (
@@ -252,8 +238,11 @@ export default function SellerChats({ user }) {
                 className="seller-chat-send"
                 onClick={handleSend}
                 disabled={!input.trim()}
+                aria-label="Kirim"
               >
-                ➤
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                  <path d="M3 11l18-8-8 18-2-7-8-3z" />
+                </svg>
               </button>
             </div>
           </>

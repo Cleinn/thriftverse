@@ -1,15 +1,5 @@
 import { supabase } from "./supabase";
 
-/**
- * ORDER ROUTING — backend logic.
- * One row per cart item is written to `transactions`, each carrying
- * { buyer_id, seller_id, product_id }. Because every row stores the
- * product's seller_id, RLS guarantees each seller's dashboard query
- * returns ONLY their own sales.
- *
- * items: array of cart items (must include product_id + seller_id)
- * Returns { error } — null on success.
- */
 export async function createOrdersFromCheckout({
   buyerId,
   items,
@@ -44,7 +34,6 @@ export async function createOrdersFromCheckout({
   return { error };
 }
 
-/** Incoming orders for ONE seller (newest first). */
 export async function fetchSellerOrders(sellerId) {
   const { data, error } = await supabase
     .from("transactions")
@@ -54,12 +43,10 @@ export async function fetchSellerOrders(sellerId) {
   return { data: data || [], error };
 }
 
-/** Seller advances an order through its lifecycle. */
 export async function updateOrderStatus(orderId, status) {
   return supabase.from("transactions").update({ status }).eq("id", orderId);
 }
 
-/** All orders placed by ONE buyer (newest first). */
 export async function fetchBuyerOrders(buyerId) {
   const { data, error } = await supabase
     .from("transactions")
@@ -69,11 +56,6 @@ export async function fetchBuyerOrders(buyerId) {
   return { data: data || [], error };
 }
 
-/**
- * Buyer confirms the order was received. This finalizes the transaction
- * by moving it to "selesai" (completed), which removes it from the
- * active tracking tab on the buyer side.
- */
 export async function confirmOrderReceived(orderId) {
   return supabase
     .from("transactions")
@@ -83,12 +65,6 @@ export async function confirmOrderReceived(orderId) {
     .single();
 }
 
-/**
- * REALTIME for the BUYER: listen for both new orders and status changes
- * on this buyer's transactions, so when a seller clicks "Ship Product"
- * the buyer sees the updated status immediately, with no refresh.
- * Returns an unsubscribe function.
- */
 export function subscribeToBuyerOrders(buyerId, { onInsert, onUpdate } = {}) {
   const channel = supabase
     .channel("buyer-orders:" + buyerId)
@@ -117,11 +93,6 @@ export function subscribeToBuyerOrders(buyerId, { onInsert, onUpdate } = {}) {
   return () => supabase.removeChannel(channel);
 }
 
-/**
- * REALTIME: push brand-new orders into the seller dashboard the
- * moment a buyer checks out — no refresh needed.
- * Returns an unsubscribe function.
- */
 export function subscribeToSellerOrders(sellerId, onInsert) {
   const channel = supabase
     .channel("orders:" + sellerId)

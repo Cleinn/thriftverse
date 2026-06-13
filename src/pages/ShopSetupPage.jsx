@@ -4,11 +4,6 @@ import { isShopSetupComplete, saveShopProfile } from "../lib/profiles";
 import { Skeleton } from "../components/Skeleton";
 import "./ShopSetupPage.css";
 
-/**
- * SELLER ONBOARDING — mandatory first-time setup.
- * Users land here automatically the first time they open the Seller
- * Page. The Seller Dashboard stays locked until shop data is saved.
- */
 export default function ShopSetupPage({ user }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", description: "", contact: "" });
@@ -16,7 +11,6 @@ export default function ShopSetupPage({ user }) {
   const [checking, setChecking] = useState(true);
   const [msg, setMsg] = useState("");
 
-  // Already onboarded? Go straight to the dashboard.
   useEffect(() => {
     if (!user) return;
     isShopSetupComplete(user.id).then((done) => {
@@ -39,7 +33,6 @@ export default function ShopSetupPage({ user }) {
       setMsg("Gagal menyimpan: " + error.message);
       return;
     }
-    // Unlock the dashboard only AFTER the data is in the database
     navigate("/seller", { replace: true });
   }
 

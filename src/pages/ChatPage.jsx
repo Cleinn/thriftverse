@@ -7,26 +7,23 @@ import Navbar from "../components/Navbar";
 import BarterCard from "../components/BarterCard";
 import { Skeleton } from "../components/Skeleton";
 import "./ChatPage.css";
-// Reuse the Seller Center chat styles so the buyer chat is identical.
 import "./SellerPage.css";
 
 export default function ChatPage({ user, onLoginClick, cartCount }) {
   const navigate = useNavigate();
   const location = useLocation();
-  // Conversation yang harus langsung dibuka (dikirim dari halaman produk)
   const initialConversationId = location.state?.conversationId || null;
 
   const [conversations, setConversations] = useState([]);
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [buyerNames, setBuyerNames] = useState({});   // conv.id → buyer username
-  const [sellerNames, setSellerNames] = useState({}); // seller_id → SHOP NAME (live)
+  const [buyerNames, setBuyerNames] = useState({});
+  const [sellerNames, setSellerNames] = useState({});
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
-  const [barterBusy, setBarterBusy] = useState(null); // message id being updated
+  const [barterBusy, setBarterBusy] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // Fetch all conversations for this user
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -39,10 +36,6 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         .order("created_at", { ascending: false });
 
       if (!error && data && !cancelled) {
-        // FIX: recipient name harus selalu NAMA TOKO yang aktual.
-        // Ambil shop_name dari profiles untuk setiap seller (live),
-        // simpan di map lokal, dan backfill kolom seller_name di DB
-        // bila masih kosong / masih menyimpan username lama.
         const nameMap = {};
         const enriched = await Promise.all(
           data.map(async (conv) => {
@@ -66,13 +59,11 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         if (cancelled) return;
         setConversations(enriched);
 
-        // Auto-open conversation dari halaman produk
         if (initialConversationId) {
           const target = enriched.find((c) => c.id === initialConversationId);
           if (target) setActiveConv(target);
         }
 
-        // Untuk percakapan di mana user adalah seller, cari username buyer
         const buyerMap = {};
         await Promise.all(
           enriched
@@ -93,7 +84,6 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
 
     loadConversations();
 
-    // REALTIME: conversation baru muncul di sidebar tanpa refresh
     const unsubscribe = subscribeToNewConversations(user.id, (conv) => {
       setConversations((prev) =>
         prev.some((c) => c.id === conv.id) ? prev : [conv, ...prev]
@@ -103,7 +93,6 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     return () => { cancelled = true; unsubscribe(); };
   }, [user, initialConversationId]);
 
-  // Fetch messages + realtime subscription when activeConv changes
   useEffect(() => {
     if (!activeConv) return;
     async function loadMessages() {
@@ -116,8 +105,6 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     }
     loadMessages();
 
-    // REALTIME: pesan masuk/keluar langsung muncul tanpa refresh.
-    // onUpdate menangani perubahan status barter (accept/reject).
     const unsubscribe = subscribeToMessages(
       activeConv.id,
       (msg) => {
@@ -133,7 +120,6 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     return unsubscribe;
   }, [activeConv]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -156,13 +142,10 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
     }
   }
 
-  // Seller accepts / rejects a barter offer from inside the chat.
   async function handleBarterDecision(msg, status) {
     setBarterBusy(msg.id);
     let error;
     if (status === "accepted") {
-      // Accepting generates the two exchange orders (seller ships their
-      // product, buyer ships their offered product to the seller).
       ({ error } = await acceptBarterOffer({ message: msg, conversation: activeConv }));
     } else {
       ({ error } = await updateBarterStatus({ messageId: msg.id, status }));
@@ -172,7 +155,6 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
       alert("Gagal memperbarui barter: " + error.message);
       return;
     }
-    // Optimistic local update (realtime UPDATE will also sync the buyer side)
     setMessages((prev) =>
       prev.map((m) => (m.id === msg.id ? { ...m, barter_status: status } : m))
     );
@@ -181,13 +163,10 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
   function getOtherName(conv) {
     if (!user) return "Penjual";
     if (user.id === conv.buyer_id) {
-      // Buyer melihat NAMA TOKO seller sebagai recipient.
-      // Prioritas: shop_name live dari profiles → seller_name tersimpan → fallback.
       const live = sellerNames[conv.seller_id];
       if (live && live !== "Penjual") return live;
       return conv.seller_name || "Penjual";
     } else {
-      // Seller melihat username buyer
       return buyerNames[conv.id] || "Pembeli";
     }
   }
@@ -214,7 +193,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
       />
       <div className="chat-page__body">
         <div className="seller-content seller-chat-layout">
-          {/* LEFT: conversation list */}
+          {}
           <div className="seller-chat-sidebar">
             <h2 className="seller-chat-sidebar-title">Conversations</h2>
             <div className="seller-chat-sidebar-list">
@@ -254,7 +233,7 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
             </div>
           </div>
 
-          {/* RIGHT: thread */}
+          {}
           <div className={`seller-chat-main ${activeConv ? "seller-chat-main--open" : ""}`}>
             {!activeConv ? (
               <div className="seller-chat-placeholder">
@@ -331,8 +310,11 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
                     className="seller-chat-send"
                     onClick={sendMessage}
                     disabled={!input.trim()}
+                    aria-label="Kirim"
                   >
-                    &#10148;
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                      <path d="M3 11l18-8-8 18-2-7-8-3z" />
+                    </svg>
                   </button>
                 </div>
               </>

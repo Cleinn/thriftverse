@@ -17,15 +17,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   const [barterLoading, setBarterLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  // ---------- barter picker ----------
   const [showBarterPicker, setShowBarterPicker] = useState(false);
   const [myListings, setMyListings] = useState([]);
   const [barterSubmitting, setBarterSubmitting] = useState(false);
 
-  // Always open the Item Detail page at the very top. Without this the
-  // view can inherit the previous page's scroll offset on mount.
-  // `behavior: "instant"` overrides the global smooth-scroll so it's a
-  // clean jump, not an animated glide.
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [id]);
@@ -61,7 +56,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
   }
 
   function addToCart(navigateAfter = false) {
-    // AUTH GATE: only logged-in users may add to / view the cart.
     if (!user) {
       onLoginClick?.();
       return;
@@ -145,8 +139,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     }
   }
 
-  // ---------- BARTER ----------
-  // Buyer picks one of their OWN active listings to offer in exchange.
   async function handleBarter() {
     if (!user) {
       onLoginClick();
@@ -160,7 +152,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     const listings = await fetchMyActiveListings(user.id);
     setBarterLoading(false);
 
-    // No products uploaded → prompt the user to upload an item first.
     if (!listings.length) {
       alert(
         "Kamu belum punya produk untuk ditukar. Upload barang kamu dulu di Seller Center sebelum mengajukan barter."
@@ -171,7 +162,6 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
     setShowBarterPicker(true);
   }
 
-  // Buyer confirmed which item to offer → create conversation + barter card message.
   async function submitBarterOffer(offered) {
     setBarterSubmitting(true);
     const convId = await openOrCreateConversation({
@@ -246,14 +236,14 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         cartCount={cartCount}
       />
 
-      {/* Back — returns to the exact previous page in history */}
+      {}
       <div className="pdp-back-row">
         <button className="pdp-back-btn" onClick={() => navigate(-1)}>
           ← Back
         </button>
       </div>
 
-      {/* Breadcrumb */}
+      {}
       <div className="pdp-breadcrumb">
         <span onClick={() => navigate("/")}>Home</span>
         {product.category && (
@@ -266,10 +256,10 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         <span>{product.title}</span>
       </div>
 
-      {/* Main layout */}
+      {}
       <div className="pdp-container">
 
-        {/* Left: Image */}
+        {}
         <div className="pdp-image-section">
           <img
             src={product.image_url}
@@ -278,13 +268,13 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
           />
         </div>
 
-        {/* Right: Info */}
+        {}
         <div className="pdp-info-section">
           <h1 className="pdp-title">{product.title}</h1>
           <p className="pdp-condition">{product.condition}</p>
           <p className="pdp-price">Rp {Number(product.price).toLocaleString("id-ID")}</p>
 
-          {/* Quantity */}
+          {}
           <div className="pdp-quantity-section">
             <span className="pdp-quantity-label">Quantity</span>
             <div className="pdp-quantity-controls">
@@ -300,7 +290,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {}
           <div className="pdp-actions">
             <button className="pdp-btn pdp-btn--buy" onClick={handleBuyNow}>
               Buy Now
@@ -319,7 +309,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         </div>
       </div>
 
-      {/* Shop Card */}
+      {}
       <div className="pdp-shop-section">
         <div className="pdp-shop-card">
           <div className="pdp-shop-info">
@@ -339,7 +329,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         </div>
       </div>
 
-      {/* Details */}
+      {}
       {product.description && (
         <div className="pdp-details-section">
           <h2 className="pdp-details-title">Details</h2>
@@ -349,7 +339,7 @@ export default function ProductDetailPage({ user, onLoginClick, onCartUpdate, ca
         </div>
       )}
 
-      {/* BARTER PICKER — choose one of your own active listings to offer */}
+      {}
       {showBarterPicker && (
         <div
           className="barter-modal-overlay"

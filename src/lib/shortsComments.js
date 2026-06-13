@@ -1,9 +1,5 @@
 import { supabase } from "./supabase";
 
-/**
- * Fetch all comments for a ThriftVid item (oldest first), so the newest
- * appear at the bottom of the scrollable list.
- */
 export async function fetchShortsComments(videoId) {
   const { data, error } = await supabase
     .from("shorts_comments")
@@ -17,10 +13,6 @@ export async function fetchShortsComments(videoId) {
   return data || [];
 }
 
-/**
- * Post a new comment. Saved to the database and broadcast in realtime
- * to everyone viewing the same video.
- */
 export async function postShortsComment({ videoId, userId, username, text }) {
   const trimmed = (text || "").trim();
   if (!trimmed) return { error: new Error("Empty comment") };
@@ -36,10 +28,6 @@ export async function postShortsComment({ videoId, userId, username, text }) {
     .single();
 }
 
-/**
- * Subscribe to new comments for one video in realtime.
- * Returns an unsubscribe function.
- */
 export function subscribeToShortsComments(videoId, onInsert) {
   const channel = supabase
     .channel("shorts-comments:" + videoId)
