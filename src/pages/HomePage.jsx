@@ -28,7 +28,7 @@ export default function HomePage({
         cartCount={cartCount} />
       <div className="home-content">
         <HeroBanner />
-        <WindowShorts />
+        <WindowShorts user={user} />
         <ProductCarousel />
       </div>
     </div>

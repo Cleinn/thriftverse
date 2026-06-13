@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { shortsData } from "../data/shortsData";
+import {
+  fetchShortsComments,
+  postShortsComment,
+  subscribeToShortsComments,
+} from "../lib/shortsComments";
 import "./WindowShorts.css";
 
-export default function WindowShorts() {
+export default function WindowShorts({ user }) {
   const [activeIndex, setActiveIndex] = useState(null);
   const isOpen = activeIndex !== null;
 
@@ -31,6 +36,7 @@ export default function WindowShorts() {
         <ShortsViewer
           items={shortsData}
           initialIndex={activeIndex}
+          user={user}
           onClose={() => setActiveIndex(null)}
         />
       )}
@@ -166,34 +172,115 @@ function VideoOverlay({ item, progress, onSeek }) {
   );
 }
 
-/* Comment panel overlay */
-function CommentPanel({ comments, onClose }) {
+/* Comment panel: functional, realtime, dark-blue themed. Comments are
+   loaded from and saved to the database and shared across all viewers. */
+function CommentPanel({ videoId, user, onClose }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState("");
+  const [posting, setPosting] = useState(false);
+  const listEndRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchShortsComments(videoId).then((data) => {
+      if (!cancelled) {
+        setComments(data);
+        setLoading(false);
+      }
+    });
+    const unsubscribe = subscribeToShortsComments(videoId, (c) => {
+      setComments((prev) => (prev.some((p) => p.id === c.id) ? prev : [...prev, c]));
+    });
+    return () => { cancelled = true; unsubscribe(); };
+  }, [videoId]);
+
+  useEffect(() => {
+    listEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [comments]);
+
+  async function handlePost() {
+    const trimmed = text.trim();
+    if (!trimmed || posting) return;
+    if (!user) {
+      alert("Login dulu untuk berkomentar.");
+      return;
+    }
+    setPosting(true);
+    const username =
+      user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+    const { data, error } = await postShortsComment({
+      videoId,
+      userId: user.id,
+      username,
+      text: trimmed,
+    });
+    setPosting(false);
+    if (error) {
+      alert("Gagal mengirim komentar: " + error.message);
+      return;
+    }
+    setText("");
+    if (data) {
+      setComments((prev) => (prev.some((p) => p.id === data.id) ? prev : [...prev, data]));
+    }
+  }
+
   return (
     <div className="shorts-comments" onClick={(e) => e.stopPropagation()}>
       <div className="shorts-comments__head">
         <span className="shorts-comments__title">Comments</span>
-        <button className="shorts-comments__close" onClick={onClose} aria-label="Close comments">×</button>
+        <button className="shorts-comments__close" onClick={onClose} aria-label="Close comments">
+          &#215;
+        </button>
       </div>
+
       <div className="shorts-comments__list">
-        {comments.length === 0 ? (
+        {loading ? (
+          <p className="shorts-comments__empty">Loading comments...</p>
+        ) : comments.length === 0 ? (
           <p className="shorts-comments__empty">Be the first to comment!</p>
         ) : (
-          comments.map((c, i) => (
-            <div className="shorts-comment" key={i}>
-              <img className="shorts-comment__avatar" src={c.avatar} alt={c.user} />
+          comments.map((c) => (
+            <div className="shorts-comment" key={c.id}>
               <div className="shorts-comment__body">
-                <span className="shorts-comment__user">{c.user}</span>
+                <span className="shorts-comment__user">{c.username || "User"}</span>
                 <span className="shorts-comment__text">{c.text}</span>
               </div>
             </div>
           ))
         )}
+        <div ref={listEndRef} />
+      </div>
+
+      <div className="shorts-comments__input-area">
+        <input
+          className="shorts-comments__input"
+          placeholder={user ? "Add a comment..." : "Login to comment..."}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handlePost();
+            }
+          }}
+          disabled={!user || posting}
+        />
+        <button
+          className="shorts-comments__post"
+          onClick={handlePost}
+          disabled={!user || posting || !text.trim()}
+        >
+          {posting ? "..." : "Post"}
+        </button>
       </div>
     </div>
   );
 }
 
-function ShortsViewer({ items, initialIndex, onClose }) {
+function ShortsViewer({ items, initialIndex, user, onClose }) {
   // current = visible item, prev = outgoing item during transition
   const [current, setCurrent] = useState(initialIndex);
   const [prev, setPrev] = useState(null);
@@ -368,9 +455,6 @@ function ShortsViewer({ items, initialIndex, onClose }) {
   }
 
   const item = items[current];
-  // No real comment backend: start every video with an empty list so the
-  // required "Be the first to comment!" placeholder shows.
-  const comments = [];
 
   return createPortal(
     <div
@@ -381,7 +465,7 @@ function ShortsViewer({ items, initialIndex, onClose }) {
     >
       <button className="shorts-viewer__close" onClick={onClose}>×</button>
 
-      <div className="shorts-viewer__frame">
+      <div className={`shorts-viewer__frame ${showComments ? "shorts-viewer__frame--comments" : ""}`}>
         <div className="shorts-viewer__stage">
 
           {/* Outgoing item — exits while incoming enters */}
@@ -435,11 +519,16 @@ function ShortsViewer({ items, initialIndex, onClose }) {
             onComment={() => setShowComments((s) => !s)}
           />
         )}
-      </div>
 
-      {showComments && (
-        <CommentPanel comments={comments} onClose={() => setShowComments(false)} />
-      )}
+        {/* Comment panel slides in on the right, beside the video */}
+        {showComments && (
+          <CommentPanel
+            videoId={item.id}
+            user={user}
+            onClose={() => setShowComments(false)}
+          />
+        )}
+      </div>
 
       {current > 0 && (
         <button className="shorts-viewer__prev" onClick={() => goTo(current - 1)}>↑</button>

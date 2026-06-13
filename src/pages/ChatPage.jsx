@@ -7,6 +7,8 @@ import Navbar from "../components/Navbar";
 import BarterCard from "../components/BarterCard";
 import { Skeleton } from "../components/Skeleton";
 import "./ChatPage.css";
+// Reuse the Seller Center chat styles so the buyer chat is identical.
+import "./SellerPage.css";
 
 export default function ChatPage({ user, onLoginClick, cartCount }) {
   const navigate = useNavigate();
@@ -210,130 +212,133 @@ export default function ChatPage({ user, onLoginClick, cartCount }) {
         onCartClick={() => navigate("/cart")}
         cartCount={cartCount}
       />
-      <div className="chat-layout">
-        {/* Sidebar - conversation list */}
-        <aside className="chat-sidebar">
-          <h2 className="chat-sidebar__title">Pesan</h2>
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div className="chat-conv-item" key={i}>
-                <Skeleton width="44px" height="44px" radius="8px" />
-                <div className="chat-conv-item__info">
-                  <Skeleton width="7rem" height="0.8125rem" radius="4px" style={{ marginBottom: "5px" }} />
-                  <Skeleton width="5rem" height="0.72rem" radius="4px" />
+      <div className="chat-page__body">
+        <div className="seller-content seller-chat-layout">
+          {/* LEFT: conversation list */}
+          <div className="seller-chat-sidebar">
+            <h2 className="seller-chat-sidebar-title">Conversations</h2>
+            <div className="seller-chat-sidebar-list">
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div className="seller-conv-item" key={i}>
+                    <Skeleton width="40px" height="40px" radius="8px" />
+                    <div className="seller-conv-item__info">
+                      <Skeleton width="65%" height="0.85rem" radius="4px" style={{ marginBottom: "5px" }} />
+                      <Skeleton width="45%" height="0.75rem" radius="4px" />
+                    </div>
+                  </div>
+                ))
+              ) : conversations.length === 0 ? (
+                <div className="seller-chat-empty">
+                  <p>No chats yet</p>
                 </div>
-              </div>
-            ))
-          ) : conversations.length === 0 ? (
-            <p className="chat-sidebar__empty">Belum ada percakapan.</p>
-          ) : (
-            conversations.map((conv) => (
-              <button
-                key={conv.id}
-                className={`chat-conv-item ${activeConv?.id === conv.id ? "chat-conv-item--active" : ""}`}
-                onClick={() => setActiveConv(conv)}
-              >
-                <img
-                  src={conv.product_image || "https://placehold.co/48x48"}
-                  alt={conv.product_title}
-                  className="chat-conv-item__img"
-                />
-                <div className="chat-conv-item__info">
-                  <span className="chat-conv-item__name">{getOtherName(conv)}</span>
-                  <span className="chat-conv-item__product">{conv.product_title}</span>
-                </div>
-              </button>
-            ))
-          )}
-        </aside>
-
-        {/* Main chat area */}
-        <main className="chat-main">
-          {!activeConv ? (
-            <div className="chat-placeholder">
-              <p>Pilih percakapan untuk mulai chat</p>
+              ) : (
+                conversations.map((conv) => (
+                  <button
+                    key={conv.id}
+                    className={`seller-conv-item ${activeConv?.id === conv.id ? "seller-conv-item--active" : ""}`}
+                    onClick={() => setActiveConv(conv)}
+                  >
+                    <img
+                      src={conv.product_image || "https://placehold.co/40x40"}
+                      alt={conv.product_title}
+                      className="seller-conv-item__img"
+                    />
+                    <div className="seller-conv-item__info">
+                      <span className="seller-conv-item__name">{getOtherName(conv)}</span>
+                      <span className="seller-conv-item__product">{conv.product_title}</span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
-          ) : (
-            <>
-              {/* Header — recipient = nama toko */}
-              <div className="chat-header">
-                <img
-                  src={activeConv.product_image || "https://placehold.co/40x40"}
-                  alt={activeConv.product_title}
-                  className="chat-header__img"
-                />
-                <div>
-                  <p className="chat-header__name">{getOtherName(activeConv)}</p>
-                  <p className="chat-header__product">{activeConv.product_title}</p>
+          </div>
+
+          {/* RIGHT: thread */}
+          <div className={`seller-chat-main ${activeConv ? "seller-chat-main--open" : ""}`}>
+            {!activeConv ? (
+              <div className="seller-chat-placeholder">
+                <p>Select a conversation to start chatting.</p>
+              </div>
+            ) : (
+              <>
+                <div className="seller-chat-header">
+                  <img
+                    src={activeConv.product_image || "https://placehold.co/36x36"}
+                    alt={activeConv.product_title}
+                    className="seller-conv-item__img"
+                  />
+                  <div className="seller-chat-header__info">
+                    <p className="seller-chat-header__name">{getOtherName(activeConv)}</p>
+                    <p className="seller-chat-header__product">{activeConv.product_title}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Messages */}
-              <div className="chat-messages">
-                {messages.length === 0 && (
-                  <p className="chat-messages__empty">Mulai percakapan tentang barang ini!</p>
-                )}
-                {messages.map((msg) =>
-                  msg.message_type === "barter" ? (
-                    <div
-                      key={msg.id}
-                      className={`chat-bubble chat-bubble--barter ${
-                        msg.sender_id === user.id ? "chat-bubble--me" : "chat-bubble--them"
-                      }`}
-                    >
-                      <BarterCard
-                        msg={msg}
-                        isSeller={activeConv.seller_id === user.id}
-                        busy={barterBusy === msg.id}
-                        onAccept={() => handleBarterDecision(msg, "accepted")}
-                        onReject={() => handleBarterDecision(msg, "rejected")}
-                      />
-                      <span className="chat-bubble__time">
-                        {new Date(msg.created_at).toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  ) : (
-                    <div
-                      key={msg.id}
-                      className={`chat-bubble ${msg.sender_id === user.id ? "chat-bubble--me" : "chat-bubble--them"}`}
-                    >
-                      <p>{msg.message_text}</p>
-                      <span className="chat-bubble__time">
-                        {new Date(msg.created_at).toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  )
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+                <div className="seller-chat-messages">
+                  {messages.length === 0 && (
+                    <p className="seller-chat-empty-msg">Mulai percakapan tentang barang ini!</p>
+                  )}
+                  {messages.map((msg) =>
+                    msg.message_type === "barter" ? (
+                      <div
+                        key={msg.id}
+                        className={`seller-bubble seller-bubble--barter ${
+                          msg.sender_id === user.id ? "seller-bubble--me" : "seller-bubble--them"
+                        }`}
+                      >
+                        <BarterCard
+                          msg={msg}
+                          isSeller={activeConv.seller_id === user.id}
+                          busy={barterBusy === msg.id}
+                          onAccept={() => handleBarterDecision(msg, "accepted")}
+                          onReject={() => handleBarterDecision(msg, "rejected")}
+                        />
+                        <span className="seller-bubble__time">
+                          {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        key={msg.id}
+                        className={`seller-bubble ${msg.sender_id === user.id ? "seller-bubble--me" : "seller-bubble--them"}`}
+                      >
+                        <p>{msg.message_text}</p>
+                        <span className="seller-bubble__time">
+                          {new Date(msg.created_at).toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    )
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
 
-              {/* Input */}
-              <div className="chat-input-area">
-                <textarea
-                  className="chat-input"
-                  placeholder="Tulis pesan..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  rows={1}
-                />
-                <button
-                  className="chat-send-btn"
-                  onClick={sendMessage}
-                  disabled={!input.trim()}
-                >
-                  ➤
-                </button>
-              </div>
-            </>
-          )}
-        </main>
+                <div className="seller-chat-input-area">
+                  <textarea
+                    className="seller-chat-input"
+                    placeholder="Tulis pesan..."
+                    rows={1}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                  <button
+                    className="seller-chat-send"
+                    onClick={sendMessage}
+                    disabled={!input.trim()}
+                  >
+                    &#10148;
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

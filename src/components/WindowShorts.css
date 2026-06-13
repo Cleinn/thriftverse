@@ -123,6 +123,13 @@
   padding-right: 84px;
   box-sizing: content-box;
   max-height: 100%;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* When comments open, the whole video/frame slides slightly to the left
+   so the comment panel has room to slide in on the right. */
+.shorts-viewer__frame--comments {
+  transform: translateX(-9.5rem);
 }
 
 /* Stage clips both items during transition. It keeps a 9:16 portrait
@@ -324,55 +331,60 @@
   100% { transform: scale(1); }
 }
 
-/* ── Comment panel ── */
+/* ── Comment panel ── dark-blue, slides in on the RIGHT of the video ── */
 .shorts-comments {
   position: absolute;
-  left: 50%;
+  left: calc(100% + 1.25rem);
+  top: 0;
   bottom: 0;
-  transform: translateX(-50%);
-  width: 340px;
-  max-width: 92vw;
-  height: 55%;
-  background: #fff;
-  border-radius: 14px 14px 0 0;
+  width: 21rem;
+  max-width: 90vw;
+  background: #0b1220;
+  border: 1px solid #1a2c42;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   z-index: 6;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.35);
-  animation: commentsUp 0.25s ease;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  animation: commentsSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes commentsUp {
-  from { transform: translate(-50%, 100%); }
-  to   { transform: translate(-50%, 0); }
+@keyframes commentsSlideIn {
+  from { opacity: 0; transform: translateX(1.5rem); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes commentsSlideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .shorts-comments__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #1a2c42;
 }
 .shorts-comments__title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111;
+  color: #ffffff;
 }
 .shorts-comments__close {
   background: none;
   border: none;
   font-size: 1.5rem;
   line-height: 1;
-  color: #999;
+  color: #8ca0b8;
   cursor: pointer;
 }
-.shorts-comments__close:hover { color: #111; }
+.shorts-comments__close:hover { color: #ffffff; }
 .shorts-comments__list {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
 }
 .shorts-comments__empty {
-  color: #888;
+  color: #8ca0b8;
   font-size: 0.875rem;
   text-align: center;
   margin-top: 2rem;
@@ -382,27 +394,59 @@
   gap: 0.625rem;
   margin-bottom: 1rem;
 }
-.shorts-comment__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
 .shorts-comment__body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 .shorts-comment__user {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #111;
+  color: #c7d2e0;
 }
 .shorts-comment__text {
   font-size: 0.8125rem;
-  color: #333;
+  color: #f1f5f9;
+  word-break: break-word;
 }
+
+/* Comment input row */
+.shorts-comments__input-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid #1a2c42;
+}
+.shorts-comments__input {
+  flex: 1;
+  min-width: 0;
+  background: #0d1b2a;
+  border: 1px solid #1a2c42;
+  border-radius: 20px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  color: #f1f5f9;
+  outline: none;
+}
+.shorts-comments__input::placeholder { color: #5d7088; }
+.shorts-comments__input:focus { border-color: #65E66B; }
+.shorts-comments__input:disabled { opacity: 0.6; cursor: not-allowed; }
+.shorts-comments__post {
+  background: #65E66B;
+  color: #020617;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+.shorts-comments__post:hover:not(:disabled) { background: #50d456; }
+.shorts-comments__post:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Animations ── */
 
@@ -499,9 +543,20 @@
   .shorts-action {
     background: rgba(255,255,255,0.92);
   }
+  /* On phones the video is full-screen, so the comment panel becomes a
+     bottom sheet and the frame is not shifted. */
+  .shorts-viewer__frame--comments {
+    transform: none;
+  }
   .shorts-comments {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
     width: 100%;
     max-width: 100vw;
     height: 60%;
+    border-radius: 14px 14px 0 0;
+    animation: commentsSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
